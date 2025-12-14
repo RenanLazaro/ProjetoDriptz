@@ -1,0 +1,119 @@
+﻿@using ProjetoDriptz.Enums
+@using ProjetoDriptz.Models.ViewModels
+@model VendaVm
+@{
+    ViewData["Title"] = "Realizar Venda";
+}
+<div class="text-center">
+    <h1 class="display-4">Realizar Venda</h1>
+</div>
+
+<form asp-controller="Venda" asp-action="Criar" method="post">
+    <!-- Campos ocultos com os dados vindos do estoque -->
+    <input type="hidden" asp-for="ProdutoId" />
+    <input type="hidden" asp-for="EstoqueId" />
+    <input type="hidden" asp-for="Tamanho" />
+    <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
+
+    <!-- Campos somente leitura para exibição -->
+    <div class="form-group">
+        <label>Produto</label>
+        <input type="text" class="form-control" value="@Model.NomeProduto" readonly />
+    </div>
+
+    <div class="form-group">
+        <label>Tamanho</label>
+        <input type="text" class="form-control" value="@Model.Tamanho" readonly />
+    </div>
+
+    <div class="form-group">
+        <label for="quantidade">Quantidade</label>
+        <input type="number" asp-for="Quantidade" class="form-control" id="quantidade" min="0" />
+    </div>
+
+    <div class="form-group">
+        <label for="PrecoItem">Valor</label>
+        <input type="text" asp-for="PrecoItem" class="form-control" id="precoUnitario" readonly />
+        <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
+    </div>
+
+    <div class="form-group">
+        <label>Forma de Pagamento</label>
+        <select asp-for="FormaDePagamento" class="form-control"
+                asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
+        </select>
+    </div>
+
+    <div class="form-group form-check">
+        <input asp-for="PossuiMaisDeUmaFormaPagamento" type="checkbox" class="form-check-input" id="chkMaisPagamento" />
+        <label class="form-check-label" for="chkMaisPagamento">Possui mais de uma forma de pagamento?</label>
+    </div>
+
+    <div class="form-group" id="formaPagamentoAdicionalSelect" style="display:none;">
+        <label>Forma de Pagamento Adicional</label>
+        <select asp-for="FormaDePagamentoAdicional" class="form-control"
+                asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
+        </select>
+    </div>
+
+    <div class="form-group" id="formaPagamentoAdicionalValor" style="display:none;">
+        <label>Qual o Valor?</label>
+        <input type="text" asp-for="ValorAdicional" class="form-control" id="valorAdicional" />
+    </div>
+
+    <br />
+    <button type="submit" class="btn btn-success w-100">Confirmar Venda</button>
+    <br />
+    <br />
+    <a class="btn btn-secondary d-block" asp-controller="Estoque" asp-action="Index" role="button">Cancelar</a>
+</form>
+
+<script>
+    const quantidadeInput = document.getElementById("quantidade");
+    const precoUnitarioInput = document.getElementById("precoUnitario");
+    const precoItemHidden = document.getElementById("precoItemHidden");
+
+    const precoBase = parseFloat("@Model.PrecoItem");
+
+    function atualizarPreco() {
+        const quantidade = parseInt(quantidadeInput.value) || 0;
+        const total = quantidade * precoBase;
+
+        // Atualiza o campo visível
+        precoUnitarioInput.value = "R$ " + total.toFixed(2);
+
+        // Atualiza o campo hidden que será enviado ao servidor
+        precoItemHidden.value = total.toFixed(2);
+    }
+
+    atualizarPreco();
+    quantidadeInput.addEventListener("input", atualizarPreco);
+
+
+
+
+    const chkMaisPagamento = document.getElementById("chkMaisPagamento");
+    const divAdicionalSelect = document.getElementById("formaPagamentoAdicionalSelect");
+    const divAdicionalValor = document.getElementById("formaPagamentoAdicionalValor");
+
+    function toggleFormaPagamentoAdicional() {
+        if (chkMaisPagamento.checked) {
+            divAdicionalSelect.style.display = "block";
+            divAdicionalValor.style.display = "block";
+        } else {
+            divAdicionalSelect.style.display = "none";
+            divAdicionalValor.style.display = "none";
+        }
+    }
+
+    // Executa ao carregar
+    toggleFormaPagamentoAdicional();
+
+    // Executa sempre que o checkbox mudar
+    chkMaisPagamento.addEventListener("change", toggleFormaPagamentoAdicional);
+
+
+
+</script>
+
+

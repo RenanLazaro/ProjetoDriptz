@@ -1,0 +1,74 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ProjetoDriptz.Data;
+using ProjetoDriptz.Models;
+
+namespace ProjetoDriptz.Repositorio
+{
+    public class EstoqueRepositorio : IEstoqueRepositorio
+    {
+        private readonly BancoContext _bancoContext;
+        public EstoqueRepositorio(BancoContext bancoContext)
+        {
+            _bancoContext = bancoContext;
+        }
+
+        public EstoqueModel ListarPorIId(int id)
+        {
+           return _bancoContext.Estoques.FirstOrDefault(x => x.Id == id);
+            
+        }
+
+        public List<EstoqueModel> BuscarTodos()
+        {
+            return _bancoContext.Estoques
+                .Include(e => e.Produto)  // Carrega o produto relacionado
+                .ToList();
+        }
+
+
+        public EstoqueModel Adicionar(EstoqueModel estoque)
+        {
+
+            //gravar no banco de dados
+            
+            _bancoContext.Estoques.Add(estoque);
+            _bancoContext.SaveChanges();    
+
+            return estoque;
+
+        }
+
+        public EstoqueModel Editar(EstoqueModel estoque)
+        {
+            EstoqueModel estoqueDb = _bancoContext.Estoques.FirstOrDefault(x => x.Id == estoque.Id);
+
+            if (estoqueDb == null)
+                throw new Exception("Houve um erro na atualização do produto.");
+
+            estoqueDb.ProdutoId = estoque.ProdutoId;
+            estoqueDb.Tamanho = estoque.Tamanho;
+            estoqueDb.Cor = estoque.Cor;   
+            estoqueDb.Quantidade = estoque.Quantidade;
+
+            _bancoContext.Estoques.Update(estoqueDb);
+            _bancoContext.SaveChanges();
+
+            return estoqueDb;
+        }
+
+
+        public bool Excluir(int id)
+        {
+            EstoqueModel estoqueDb = ListarPorIId(id);
+
+            if(estoqueDb == null) throw new Exception("Houve um erro na exclusão do produto em estoque!");
+
+            _bancoContext.Estoques.Remove(estoqueDb);
+            _bancoContext.SaveChanges();
+
+            return true;
+        }
+
+     
+    }
+}
