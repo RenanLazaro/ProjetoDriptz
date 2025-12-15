@@ -68,34 +68,60 @@ namespace ProjetoDriptz.Controllers
             return View(produto);
         }
 
-     
+
 
 
         public IActionResult Apagar(int id)
         {
             try
             {
+                var produto = _produtoRepositorio.ListarPorIId(id);
 
-              bool apagado =   _produtoRepositorio.Excluir(id);
+                if (produto == null)
+                {
+                    TempData["MensagemErro"] = "Produto não encontrado!";
+                    return RedirectToAction("Index");
+                }
+
+                if (!string.IsNullOrEmpty(produto.Imagem))
+                {
+                    var caminhoImagem = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot",
+                        "imagens",
+                        "produtos",
+                        produto.Imagem
+                    );
+
+                    if (System.IO.File.Exists(caminhoImagem))
+                    {
+                        System.IO.File.Delete(caminhoImagem);
+                    }
+                }
+
+                // 3️⃣ Remove o registro do banco
+                bool apagado = _produtoRepositorio.Excluir(id);
 
                 if (apagado)
                 {
-                    TempData["MensagemSucesso"] = "Produto Apagado com sucesso!";
-                }else
-                {
-                    TempData["MensagemErro"] = "Ops, não conseguimos apagar seu produto!";
+                    TempData["MensagemSucesso"] = "Produto apagado com sucesso!";
                 }
-               
+                else
+                {
+                    TempData["MensagemErro"] = "Ops, não conseguimos apagar o produto!";
+                }
+
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                TempData["MensagemErro"] = "Ops, não conseguimos apagar seu produto!";
-                return RedirectToAction("Index");   
+                TempData["MensagemErro"] =
+                    $"Erro ao apagar produto. Detalhes: {ex.Message}";
+                return RedirectToAction("Index");
             }
-
         }
+
+
         [HttpPost]
         public IActionResult Criar([FromForm] ProdutoVm produtoVm)
         {
