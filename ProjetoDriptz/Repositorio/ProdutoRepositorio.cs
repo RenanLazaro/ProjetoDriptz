@@ -44,7 +44,7 @@ namespace ProjetoDriptz.Repositorio
 
             produtoDb.NomeProduto = produto.NomeProduto;
             produtoDb.Tipo = produto.Tipo;
-            produtoDb.Tamanho = produto.Tamanho;
+            produtoDb.PrecoCusto = produto.PrecoCusto;
             produtoDb.Preco = produto.Preco;
 
             _bancoContext.Produtos.Update(produtoDb);

@@ -1,5 +1,6 @@
 ﻿using ProjetoDriptz.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjetoDriptz.Models
 {
@@ -14,11 +15,18 @@ namespace ProjetoDriptz.Models
         public int Tipo { get; set; }
 
         [Required(ErrorMessage = "O tamanho do produto é obrigatório.")]
-        public int Tamanho { get; set; }
+        public decimal PrecoCusto { get; set; }
 
         [Required(ErrorMessage = "O tamanho do produto é obrigatório.")]
         public string Preco { get; set; }
 
+
+        [Required(ErrorMessage = "O tamanho do produto é obrigatório.")]
+        public string? Imagem { get; set; }
+
+        // Propriedade NotMapped para upload (não salva no banco)
+        [NotMapped]
+        public IFormFile? ImagemUpload { get; set; }
 
         public virtual List<EstoqueModel> Estoques { get; set; }
         public virtual List<VendaModel> Vendas { get; set; }

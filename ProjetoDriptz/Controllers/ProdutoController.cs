@@ -39,24 +39,29 @@ namespace ProjetoDriptz.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Converte Model para ViewModel
+                // Converte Model → ViewModel
                 var produtoVm = new ProdutoVm
                 {
                     Id = produto.Id,
                     NomeProduto = produto.NomeProduto,
-                    Tipo = (TipoProduto)produto.Tipo, // <- Cast explícito
-                    Tamanho = (TamanhoProduto)produto.Tamanho, // <- Cast explícito
-                    Preco = produto.Preco
+                    Tipo = (TipoProduto)produto.Tipo,
+                    PrecoCusto = produto.PrecoCusto,
+                    Preco = produto.Preco,
+
+                    Imagem = produto.Imagem
                 };
 
                 return View(produtoVm);
             }
             catch (Exception erro)
             {
-                TempData["MensagemErro"] = $"Erro ao carregar produto. Detalhes: {erro.Message}";
+                TempData["MensagemErro"] =
+                    $"Erro ao carregar produto. Detalhes: {erro.Message}";
                 return RedirectToAction("Index");
             }
         }
+
+
         public IActionResult ApagarConfirmacao(int id)
         {
             ProdutoModel produto = _produtoRepositorio.ListarPorIId(id);
@@ -91,72 +96,133 @@ namespace ProjetoDriptz.Controllers
             }
 
         }
-
         [HttpPost]
-        public IActionResult Criar(ProdutoVm produtoVm)
+        public IActionResult Criar([FromForm] ProdutoVm produtoVm)
         {
             try
             {
-                ModelState.Remove("Id");
-                if (ModelState.IsValid)
+                var caminhoPasta = Path.Combine(Directory.GetCurrentDirectory(),
+    "wwwroot", "imagens", "produtos");
+                // Verificar se o arquivo foi enviado
+                if (produtoVm.ImagemUpload == null || produtoVm.ImagemUpload.Length == 0)
                 {
-                    // Converte o ViewModel para o Model
-                    var produto = new ProdutoModel
-                    {
-                        NomeProduto = produtoVm.NomeProduto,
-                        Tipo = (int)produtoVm.Tipo,
-                        Tamanho = (int)produtoVm.Tamanho,
-                        Preco = produtoVm.Preco
-                    };
-                    _produtoRepositorio.Adicionar(produto);
-                    TempData["MensagemSucesso"] = "Produto cadastrado com sucesso!";
-                    return RedirectToAction("Index");
-
+                    ModelState.AddModelError("ImagemUpload", "Selecione uma imagem.");
+                    return View(produtoVm);
                 }
 
+                // Verificar a extensão do arquivo
+                var extensoesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var extensao = Path.GetExtension(produtoVm.ImagemUpload.FileName).ToLower();
+
+                if (!extensoesPermitidas.Contains(extensao))
+                {
+                    ModelState.AddModelError("ImagemUpload", "Formato de imagem inválido.");
+                    return View(produtoVm);
+                }
+
+                // Verificar o tamanho da imagem (máximo de 5MB)
+                if (produtoVm.ImagemUpload.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("ImagemUpload", "Imagem maior que 5MB.");
+                    return View(produtoVm);
+                }
+
+                // Gerar um nome único para a imagem
+                var nomeImagem = $"{Guid.NewGuid()}{extensao}";
+
+                // Caminho completo onde a imagem será salva
+                var caminhoCompleto = Path.Combine(caminhoPasta, nomeImagem);
+
+                // Salvar a imagem no diretório
+                using (var stream = new FileStream(caminhoCompleto, FileMode.Create))
+                {
+                    produtoVm.ImagemUpload.CopyTo(stream);
+                }
+
+                // Continuar o fluxo normal
+                var produto = new ProdutoModel
+                {
+                    NomeProduto = produtoVm.NomeProduto,
+                    Tipo = (int)produtoVm.Tipo,
+                    PrecoCusto = produtoVm.PrecoCusto, 
+                    Preco = produtoVm.Preco,
+                    Imagem = nomeImagem // Aqui você salva o nome da imagem
+                };
+
+                _produtoRepositorio.Adicionar(produto);
+
+                TempData["MensagemSucesso"] = "Produto cadastrado com sucesso!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                // Logar o erro
+                Console.WriteLine($"Erro ao salvar a imagem: {ex.Message}");
+                TempData["MensagemErro"] = $"Ops, houve um erro ao salvar a imagem. Detalhes: {ex.Message}";
                 return View(produtoVm);
-
             }
-            catch (Exception erro)
-            {
 
-
-                TempData["MensagemErro"] = $"Ops, não conseguimos cadastrar seu produto, tente novamente. Detalhes do erro: {erro.Message}";
-                return RedirectToAction("Index");
-            }
         }
+
 
 
 
         [HttpPost]
-        public IActionResult Alterar(ProdutoVm produtoVm)
+        public IActionResult Alterar([FromForm] ProdutoVm produtoVm)
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    // Converte ViewModel para Model
-                    var produto = new ProdutoModel
-                    {
-                        Id = produtoVm.Id,
-                        NomeProduto = produtoVm.NomeProduto,
-                        Tipo = (int)produtoVm.Tipo,
-                        Tamanho = (int)produtoVm.Tamanho,
-                        Preco = produtoVm.Preco
-                    };
+                if (!ModelState.IsValid)
+                    return View(produtoVm);
 
-                    _produtoRepositorio.Editar(produto);
-                    TempData["MensagemSucesso"] = "Produto alterado com sucesso!";
-                    return RedirectToAction("Index");
+                var produto = _produtoRepositorio.ListarPorIId(produtoVm.Id);
+                if (produto == null)
+                    return NotFound();
+
+                produto.NomeProduto = produtoVm.NomeProduto;
+                produto.Tipo = (int)produtoVm.Tipo;
+                produto.PrecoCusto = produtoVm.PrecoCusto;
+                produto.Preco = produtoVm.Preco;
+
+                // 🖼️ Troca de imagem (se houver)
+                if (produtoVm.ImagemUpload != null && produtoVm.ImagemUpload.Length > 0)
+                {
+                    var extensao = Path.GetExtension(produtoVm.ImagemUpload.FileName);
+                    var nomeImagem = $"{Guid.NewGuid()}{extensao}";
+
+                    var pasta = Path.Combine(Directory.GetCurrentDirectory(),
+                                             "wwwroot", "imagens", "produtos");
+
+                    var caminhoNova = Path.Combine(pasta, nomeImagem);
+
+                    using (var stream = new FileStream(caminhoNova, FileMode.Create))
+                    {
+                        produtoVm.ImagemUpload.CopyTo(stream);
+                    }
+
+                    // 🧹 Remove imagem antiga
+                    if (!string.IsNullOrEmpty(produto.Imagem))
+                    {
+                        var caminhoAntigo = Path.Combine(pasta, produto.Imagem);
+                        if (System.IO.File.Exists(caminhoAntigo))
+                            System.IO.File.Delete(caminhoAntigo);
+                    }
+
+                    produto.Imagem = nomeImagem;
                 }
-                return View("Editar", produtoVm);
+
+                _produtoRepositorio.Editar(produto);
+
+                TempData["MensagemSucesso"] = "Produto alterado com sucesso!";
+                return RedirectToAction("Index");
             }
-            catch (Exception erro)
+            catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Ops, não conseguimos atualizar seu produto, tente novamente. Detalhes do erro: {erro.Message}";
+                TempData["MensagemErro"] = $"Erro ao alterar produto: {ex.Message}";
                 return RedirectToAction("Index");
             }
         }
+
 
 
 

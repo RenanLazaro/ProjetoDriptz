@@ -26,6 +26,12 @@ namespace ProjetoDriptz.Repositorio
         }
 
 
+        public EstoqueModel BuscarPorProdutoId(int produtoId)
+        {
+            return _bancoContext.Estoques
+                .FirstOrDefault(x => x.ProdutoId == produtoId);
+        }
+
         public EstoqueModel Adicionar(EstoqueModel estoque)
         {
 

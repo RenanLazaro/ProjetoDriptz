@@ -285,32 +285,49 @@ namespace ProjetoDriptz.Controllers
             }
         }
 
-
         public IActionResult Apagar(int id)
         {
             try
             {
+                // 1. Buscar a venda
+                var venda = _vendaRepositorio.ListarPorIId(id);
+                if (venda == null)
+                {
+                    TempData["MensagemErro"] = "Venda não encontrada!";
+                    return RedirectToAction("Index");
+                }
 
+                var estoque = _estoqueRepositorio.BuscarPorProdutoId(venda.ProdutoId);
+
+                if (estoque == null)
+                {
+                    TempData["MensagemErro"] = $"Estoque do produto {venda.ProdutoId} não encontrado!";
+                    return RedirectToAction("Index");
+                }
+
+                // 3. Devolver a quantidade
+                estoque.Quantidade += venda.Quantidade;
+                _estoqueRepositorio.Editar(estoque);
+
+                // 4. Excluir a venda
                 bool apagado = _vendaRepositorio.Excluir(id);
 
                 if (apagado)
                 {
-                    TempData["MensagemSucesso"] = "Estoque Apagado com sucesso!";
+                    TempData["MensagemSucesso"] = "Venda apagada e estoque atualizado com sucesso!";
                 }
                 else
                 {
-                    TempData["MensagemErro"] = "Ops, não conseguimos apagar seu estoque!";
+                    TempData["MensagemErro"] = "Ops, não conseguimos apagar a venda!";
                 }
 
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                TempData["MensagemErro"] = "Ops, não conseguimos apagar seu estoque!";
+                TempData["MensagemErro"] = $"Ops, ocorreu um erro: {ex.Message}";
                 return RedirectToAction("Index");
             }
-
         }
 
     }

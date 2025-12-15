@@ -4,11 +4,33 @@
 @{
     ViewData["Title"] = "Cadastrar Produto";
 }
+
+<style>
+    .image-preview {
+        max-width: 300px;
+        margin-top: 15px;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        display: none;
+        text-align: center;
+    }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 5px;
+        }
+</style>
+
 <div class="text-center">
     <h1 class="display-4">Cadastrar Produto</h1>
 </div>
 
-<form asp-controller="Produto" asp-action="Criar" method="post">
+<!-- IMPORTANTE: Adicionar enctype="multipart/form-data" -->
+<form asp-controller="Produto" asp-action="Criar" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label for="NomeProduto">Nome</label>
         <input type="text" asp-for="NomeProduto" class="form-control" placeholder="Nome do Produto">
@@ -25,13 +47,11 @@
     </div>
 
     <div class="form-group">
-        <label for="Tamanho">Tamanho</label>
-        <select asp-for="Tamanho" class="form-control"
-                asp-items="Html.GetEnumSelectList<TamanhoProduto>()">
-            <option value="">Selecione um tamanho</option>
-        </select>
-        @Html.ValidationMessageFor(x => x.Tamanho)
+        <label asp-for="PrecoCusto">Preço de Custo</label>
+        <input asp-for="PrecoCusto"  type="number" step="0.01" min="0"  class="form-control"  placeholder="0,00" />
+       @Html.ValidationMessageFor(x => x.PrecoCusto)
     </div>
+
 
     <div class="form-group">
         <label for="Preco">Preço</label>
@@ -40,8 +60,85 @@
     </div>
 
     <br />
+
+    <div class="form-group">
+        <label asp-for="ImagemUpload" class="control-label">Imagem do Produto</label>
+        <input asp-for="ImagemUpload"
+               type="file"
+               class="form-control-file"
+               accept="image/*"
+               id="imagemInput" />
+        <small class="form-text text-muted">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
+        <span asp-validation-for="ImagemUpload" class="text-danger"></span>
+
+        <!-- Preview da imagem -->
+        <div class="image-preview" id="imagePreview">
+            <p class="text-muted mb-2">Preview da Imagem:</p>
+            <img id="previewImg" src="" alt="Preview da imagem" />
+        </div>
+    </div>
+
+    <br />
     <button type="submit" class="btn btn-primary w-100">Adicionar</button>
     <br />
     <br />
     <a class="btn btn-secondary d-block" asp-controller="Produto" asp-action="Index" role="button">Voltar</a>
 </form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Preview da imagem
+        document.addEventListener('DOMContentLoaded', function() {
+            const imagemInput = document.getElementById('imagemInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+
+            if (imagemInput) {
+                imagemInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+
+                    console.log('Arquivo selecionado:', file); // Debug
+
+                    if (file) {
+                        // Verifica tamanho (5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Arquivo muito grande! Máximo 5MB.');
+                            imagemInput.value = '';
+                            imagePreview.style.display = 'none';
+                            return;
+                        }
+
+                        // Verifica se é imagem
+                        if (file.type.match('image.*')) {
+                            const reader = new FileReader();
+
+                            reader.onload = function(e) {
+                                previewImg.src = e.target.result;
+                                imagePreview.style.display = 'block';
+                                console.log('Preview carregado!'); // Debug
+                            }
+
+                            reader.onerror = function() {
+                                alert('Erro ao carregar imagem.');
+                            }
+
+                            reader.readAsDataURL(file);
+                        } else {
+                            alert('Selecione apenas imagens (JPG, PNG, GIF)');
+                            imagemInput.value = '';
+                            imagePreview.style.display = 'none';
+                        }
+                    } else {
+                        imagePreview.style.display = 'none';
+                    }
+                });
+            } else {
+                console.error('Input de imagem não encontrado!'); // Debug
+            }
+        });
+    </script>
+}

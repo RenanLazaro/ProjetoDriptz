@@ -1,96 +1,114 @@
 ﻿@using ProjetoDriptz.Enums
 @model List<ProdutoModel>
+
 @{
     ViewData["Title"] = "Lista de Produtos";
 }
 
-
-
 <div class="text-center">
-    
-   
+
     <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-     
-        <a class="btn btn-primary" role="button" asp-controller="Produto" asp-action="Criar">Adicionar Novo Produto</a>
-
+        <a class="btn btn-primary"
+           role="button"
+           asp-controller="Produto"
+           asp-action="Criar">
+            Adicionar Novo Produto
+        </a>
     </div>
-    
-    <br />
 
+    <br />
 
     @if (TempData["MensagemSucesso"] != null)
     {
         <div class="alert alert-success" role="alert">
-            <button type="button" class="btn btn-danger btn-sm close-alert" arial-label="Close">X</button>
+            <button type="button" class="btn btn-danger btn-sm close-alert">X</button>
             @TempData["MensagemSucesso"]
         </div>
-
     }
 
     @if (TempData["MensagemErro"] != null)
     {
         <div class="alert alert-danger" role="alert">
-            <button type="button" class="btn btn-danger btn-sm close-alert" arial-label="Close">X</button>
+            <button type="button" class="btn btn-danger btn-sm close-alert">X</button>
             @TempData["MensagemErro"]
         </div>
-
     }
-
-
-
 
     <h1>Lista de Produtos</h1>
 
-    <table class="table" id="table-grid">
+    <table class="table table-striped align-middle" id="table-grid">
         <thead>
             <tr>
-                <th scope="col">#</th>
+                <th scope="col">Imagem</th>
                 <th scope="col">Produto</th>
                 <th scope="col">Tipo</th>
-                <th scope="col">Tamanho</th>
-                <th scope="col">Quantidade</th>
-                <th scope="col"></th>
+                <th scope="col">Preço de Custo</th>
+                <th scope="col">Preço</th>
+                <th scope="col">Ações</th>
             </tr>
         </thead>
-        <tbody>
-            @if(Model != null && Model.Any())
-            {
-                foreach( ProdutoModel produto in Model)
-                {
 
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (ProdutoModel produto in Model)
+                {
                     <tr>
-                        <th scope="row">@produto.Id</th>
-                        <td>@produto.NomeProduto</td>
+                        <!-- IMAGEM COM LINK -->
                         <td>
-                            @(produto.Tipo == (int)TipoProduto.Camisa ? "Camisa"
-                                                : produto.Tipo == (int)TipoProduto.BlusaDeFrio ? "Blusa De Frio"
-                                                : produto.Tipo == (int)TipoProduto.Boné ? "Boné"
-                                                : produto.Tipo == (int)TipoProduto.Bermuda ? "Bermuda"
-                            : "Indefinido")
-                                       
+                            @if (!string.IsNullOrEmpty(produto.Imagem))
+                            {
+                                <a href="~/imagens/produtos/@produto.Imagem" target="_blank">
+                                    <img src="~/imagens/produtos/@produto.Imagem"
+                                         alt="Imagem do produto"
+                                         style="width:50px;
+                                        height:50px;
+                                        object-fit:cover;
+                                        border-radius:6px;
+                                        box-shadow:0 2px 6px rgba(0,0,0,0.15);" />
+                                </a>
+
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sem imagem</span>
+                            }
+                </td>
+
+                <td>@produto.NomeProduto</td>
+
+                <td>
+                    @(produto.Tipo == (int)TipoProduto.Camisa ? "Camisa"
+                                        : produto.Tipo == (int)TipoProduto.BlusaDeFrio ? "Blusa de Frio"
+                                        : produto.Tipo == (int)TipoProduto.Boné ? "Boné"
+                                        : produto.Tipo == (int)TipoProduto.Bermuda ? "Bermuda"
+                                        : "Indefinido")
+                                                   </td>
+
+                        <td>R$ @produto.PrecoCusto</td>
+
+                        <td>R$ @produto.Preco</td>
+
                         <td>
-                            @(produto.Tamanho == (int)TamanhoProduto.P ? "P"
-                            : produto.Tamanho == (int)TamanhoProduto.M ? "M"
-                            : produto.Tamanho == (int)TamanhoProduto.G ? "G"
-                            : produto.Tamanho == (int)TamanhoProduto.GG ? "GG"
-                            : "Indefinido")
-                         </td>
-                        <td >@produto.Preco</td>
-                        <td>
-                            <div class="btn-group" role="group" aria-label="Ações">
-                                <a role="button" class="btn btn-primary" asp-route-id="@produto.Id" asp-controller="Produto" asp-action="Editar">Editar</a>
-                                <a role="button" class="btn btn-danger" asp-route-id="@produto.Id" asp-controller="Produto" asp-action="ApagarConfirmacao">Apagar</a>
+                            <div class="btn-group" role="group">
+                                <a class="btn btn-primary"
+                                   asp-controller="Produto"
+                                   asp-action="Editar"
+                                   asp-route-id="@produto.Id">
+                                    Editar
+                                </a>
+
+                                <a class="btn btn-danger"
+                                   asp-controller="Produto"
+                                   asp-action="ApagarConfirmacao"
+                                   asp-route-id="@produto.Id">
+                                    Apagar
+                                </a>
                             </div>
                         </td>
                     </tr>
-                }
+                        }
             }
-
         </tbody>
     </table>
-
 </div>
-
-
-
-

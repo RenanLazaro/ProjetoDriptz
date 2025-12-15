@@ -1,5 +1,6 @@
 ﻿using ProjetoDriptz.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjetoDriptz.Models.ViewModels
 {
@@ -14,9 +15,15 @@ namespace ProjetoDriptz.Models.ViewModels
         public TipoProduto Tipo { get; set; }
 
         [Required(ErrorMessage = "Campo Obrigatório")]
-        public TamanhoProduto Tamanho { get; set; }
+        public decimal PrecoCusto { get; set; }
 
         [Required(ErrorMessage = "Campo Obrigatório")]
         public string Preco { get; set; }
+
+
+        public string? Imagem { get; set; }
+
+        [NotMapped]
+        public IFormFile? ImagemUpload { get; set; }
     }
 }

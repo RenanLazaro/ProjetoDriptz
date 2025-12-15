@@ -2,10 +2,25 @@
 @using ProjetoDriptz.Models.ViewModels
 @model VendaVm
 @{
-    ViewData["Title"] = "Realizar Venda";
+    ViewData["Title"] = "Criar Venda";
 }
+
+<style>
+    input[readonly].form-control {
+        background-color: #e9ecef !important;
+        cursor: not-allowed;
+        opacity: 0.85;
+    }
+
+        input[readonly].form-control:focus {
+            background-color: #e9ecef !important;
+            border-color: #ced4da;
+            box-shadow: none;
+        }
+</style>
+
 <div class="text-center">
-    <h1 class="display-4">Realizar Venda</h1>
+    <h1>Registrar Nova Venda</h1>
 </div>
 
 <form asp-controller="Venda" asp-action="Criar" method="post">
@@ -34,7 +49,6 @@
     <div class="form-group">
         <label for="PrecoItem">Valor</label>
         <input type="text" asp-for="PrecoItem" class="form-control" id="precoUnitario" readonly />
-        <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
     </div>
 
     <div class="form-group">
@@ -72,7 +86,6 @@
     const quantidadeInput = document.getElementById("quantidade");
     const precoUnitarioInput = document.getElementById("precoUnitario");
     const precoItemHidden = document.getElementById("precoItemHidden");
-
     const precoBase = parseFloat("@Model.PrecoItem");
 
     function atualizarPreco() {
@@ -88,9 +101,6 @@
 
     atualizarPreco();
     quantidadeInput.addEventListener("input", atualizarPreco);
-
-
-
 
     const chkMaisPagamento = document.getElementById("chkMaisPagamento");
     const divAdicionalSelect = document.getElementById("formaPagamentoAdicionalSelect");
@@ -111,9 +121,4 @@
 
     // Executa sempre que o checkbox mudar
     chkMaisPagamento.addEventListener("change", toggleFormaPagamentoAdicional);
-
-
-
 </script>
-
-
