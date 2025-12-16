@@ -58,6 +58,17 @@
         </select>
     </div>
 
+    <div class="form-group">
+        <label for="desconto">Desconto (%)</label>
+        <input type="number"
+               class="form-control"
+               id="desconto"
+               min="0"
+               max="100"
+               value="0" />
+    </div>
+
+
     <div class="form-group form-check">
         <input asp-for="PossuiMaisDeUmaFormaPagamento" type="checkbox" class="form-check-input" id="chkMaisPagamento" />
         <label class="form-check-label" for="chkMaisPagamento">Possui mais de uma forma de pagamento?</label>
@@ -84,23 +95,31 @@
 
 <script>
     const quantidadeInput = document.getElementById("quantidade");
-    const precoUnitarioInput = document.getElementById("precoUnitario");
-    const precoItemHidden = document.getElementById("precoItemHidden");
-    const precoBase = parseFloat("@Model.PrecoItem");
+       const descontoInput = document.getElementById("desconto");
+       const precoUnitarioInput = document.getElementById("precoUnitario");
+       const precoItemHidden = document.getElementById("precoItemHidden");
 
-    function atualizarPreco() {
-        const quantidade = parseInt(quantidadeInput.value) || 0;
-        const total = quantidade * precoBase;
+       const precoBase = parseFloat("@Model.PrecoItem");
 
-        // Atualiza o campo visível
-        precoUnitarioInput.value = "R$ " + total.toFixed(2);
+       function atualizarPreco() {
+           const quantidade = parseInt(quantidadeInput.value) || 0;
+           const descontoPercentual = parseFloat(descontoInput.value) || 0;
 
-        // Atualiza o campo hidden que será enviado ao servidor
-        precoItemHidden.value = total.toFixed(2);
-    }
+           const subtotal = quantidade * precoBase;
+           const valorDesconto = subtotal * (descontoPercentual / 100);
+           const totalFinal = subtotal - valorDesconto;
 
-    atualizarPreco();
-    quantidadeInput.addEventListener("input", atualizarPreco);
+           // Atualiza campo visível
+           precoUnitarioInput.value = "R$ " + totalFinal.toFixed(2);
+
+           // Atualiza campo hidden enviado ao backend
+           precoItemHidden.value = totalFinal.toFixed(2);
+       }
+
+       atualizarPreco();
+
+       quantidadeInput.addEventListener("input", atualizarPreco);
+       descontoInput.addEventListener("input", atualizarPreco);
 
     const chkMaisPagamento = document.getElementById("chkMaisPagamento");
     const divAdicionalSelect = document.getElementById("formaPagamentoAdicionalSelect");
