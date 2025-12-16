@@ -4,8 +4,45 @@
 @{
     ViewData["Title"] = "Criar Venda";
 }
-
 <style>
+    /* Estilos gerais para um look moderno e clean, inspirado na imagem */
+    body {
+        background-color: #f8f9fa; /* Fundo claro */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container-sale {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-center h1 {
+        color: #007bff; /* Azul principal, similar ao ícone da imagem */
+        font-weight: bold;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        padding: 12px;
+        border: 1px solid #ced4da;
+        background-color: #f0f4ff; /* Fundo azul claro, inspirado nas cards da imagem */
+        transition: border-color 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
     input[readonly].form-control {
         background-color: #e9ecef !important;
         cursor: not-allowed;
@@ -17,109 +54,158 @@
             border-color: #ced4da;
             box-shadow: none;
         }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+    label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+
+    /* Estilo para o checkbox */
+    .form-check-label {
+        color: #495057;
+    }
+
+    /* Adiciona um ícone sutil nos campos, similar aos ícones da imagem */
+    .form-group {
+        position: relative;
+    }
+
+        .form-group::before {
+            content: '\1F4E6'; /* Ícone de pacote, similar ao shopping bag */
+            font-family: "Segoe UI Emoji";
+            position: absolute;
+            left: 15px;
+            top: 42px;
+            color: #007bff;
+            opacity: 0.5;
+        }
+
+    /* Ajuste para campos sem ícone se necessário */
+    .no-icon::before {
+        content: none;
+    }
+
+    /* Fundo gradiente sutil para o container */
+    .container-sale {
+        background: linear-gradient(135deg, #ffffff, #f0f4ff);
+    }
 </style>
 
-<div class="text-center">
-    <h1>Registrar Nova Venda</h1>
+<div class="container-sale">
+    <div class="text-center">
+        <h1>Registrar Nova Venda</h1>
+    </div>
+    <form asp-controller="Venda" asp-action="Criar" method="post">
+        <!-- Campos ocultos com os dados vindos do estoque -->
+        <input type="hidden" asp-for="ProdutoId" />
+        <input type="hidden" asp-for="EstoqueId" />
+        <input type="hidden" asp-for="Tamanho" />
+        <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
+
+        <!-- Campos somente leitura para exibição -->
+        <div class="form-group">
+            <label>Produto</label>
+            <input type="text" class="form-control" value="@Model.NomeProduto" readonly />
+        </div>
+        <div class="form-group">
+            <label>Tamanho</label>
+            <input type="text" class="form-control" value="@Model.Tamanho" readonly />
+        </div>
+        <div class="form-group no-icon">
+            <!-- Sem ícone para quantidade -->
+            <label for="quantidade">Quantidade</label>
+            <input type="number" asp-for="Quantidade" class="form-control" id="quantidade" min="0" />
+        </div>
+        <div class="form-group">
+            <label for="PrecoItem">Valor</label>
+            <input type="text" asp-for="PrecoItem" class="form-control" id="precoUnitario" readonly />
+        </div>
+        <div class="form-group no-icon">
+            <label>Forma de Pagamento</label>
+            <select asp-for="FormaDePagamento" class="form-control"
+                    asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
+            </select>
+        </div>
+        <div class="form-group no-icon">
+            <label for="desconto">Desconto (%)</label>
+            <input type="number"
+                   class="form-control"
+                   id="desconto"
+                   min="0"
+                   max="100"
+                   value="0" />
+        </div>
+        <div class="form-group form-check">
+            <input asp-for="PossuiMaisDeUmaFormaPagamento" type="checkbox" class="form-check-input" id="chkMaisPagamento" />
+            <label class="form-check-label" for="chkMaisPagamento">Possui mais de uma forma de pagamento?</label>
+        </div>
+        <div class="form-group no-icon" id="formaPagamentoAdicionalSelect" style="display:none;">
+            <label>Forma de Pagamento Adicional</label>
+            <select asp-for="FormaDePagamentoAdicional" class="form-control"
+                    asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
+            </select>
+        </div>
+        <div class="form-group no-icon" id="formaPagamentoAdicionalValor" style="display:none;">
+            <label>Qual o Valor?</label>
+            <input type="text" asp-for="ValorAdicional" class="form-control" id="valorAdicional" />
+        </div>
+        <br />
+        <button type="submit" class="btn btn-success w-100">Confirmar Venda</button>
+        <br />
+        <br />
+        <a class="btn btn-secondary d-block" asp-controller="Estoque" asp-action="Index" role="button">Cancelar</a>
+    </form>
 </div>
-
-<form asp-controller="Venda" asp-action="Criar" method="post">
-    <!-- Campos ocultos com os dados vindos do estoque -->
-    <input type="hidden" asp-for="ProdutoId" />
-    <input type="hidden" asp-for="EstoqueId" />
-    <input type="hidden" asp-for="Tamanho" />
-    <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
-
-    <!-- Campos somente leitura para exibição -->
-    <div class="form-group">
-        <label>Produto</label>
-        <input type="text" class="form-control" value="@Model.NomeProduto" readonly />
-    </div>
-
-    <div class="form-group">
-        <label>Tamanho</label>
-        <input type="text" class="form-control" value="@Model.Tamanho" readonly />
-    </div>
-
-    <div class="form-group">
-        <label for="quantidade">Quantidade</label>
-        <input type="number" asp-for="Quantidade" class="form-control" id="quantidade" min="0" />
-    </div>
-
-    <div class="form-group">
-        <label for="PrecoItem">Valor</label>
-        <input type="text" asp-for="PrecoItem" class="form-control" id="precoUnitario" readonly />
-    </div>
-
-    <div class="form-group">
-        <label>Forma de Pagamento</label>
-        <select asp-for="FormaDePagamento" class="form-control"
-                asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="desconto">Desconto (%)</label>
-        <input type="number"
-               class="form-control"
-               id="desconto"
-               min="0"
-               max="100"
-               value="0" />
-    </div>
-
-
-    <div class="form-group form-check">
-        <input asp-for="PossuiMaisDeUmaFormaPagamento" type="checkbox" class="form-check-input" id="chkMaisPagamento" />
-        <label class="form-check-label" for="chkMaisPagamento">Possui mais de uma forma de pagamento?</label>
-    </div>
-
-    <div class="form-group" id="formaPagamentoAdicionalSelect" style="display:none;">
-        <label>Forma de Pagamento Adicional</label>
-        <select asp-for="FormaDePagamentoAdicional" class="form-control"
-                asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
-        </select>
-    </div>
-
-    <div class="form-group" id="formaPagamentoAdicionalValor" style="display:none;">
-        <label>Qual o Valor?</label>
-        <input type="text" asp-for="ValorAdicional" class="form-control" id="valorAdicional" />
-    </div>
-
-    <br />
-    <button type="submit" class="btn btn-success w-100">Confirmar Venda</button>
-    <br />
-    <br />
-    <a class="btn btn-secondary d-block" asp-controller="Estoque" asp-action="Index" role="button">Cancelar</a>
-</form>
 
 <script>
     const quantidadeInput = document.getElementById("quantidade");
-       const descontoInput = document.getElementById("desconto");
-       const precoUnitarioInput = document.getElementById("precoUnitario");
-       const precoItemHidden = document.getElementById("precoItemHidden");
+    const descontoInput = document.getElementById("desconto");
+    const precoUnitarioInput = document.getElementById("precoUnitario");
+    const precoItemHidden = document.getElementById("precoItemHidden");
+    const precoBase = parseFloat("@Model.PrecoItem");
 
-       const precoBase = parseFloat("@Model.PrecoItem");
+    function atualizarPreco() {
+        const quantidade = parseInt(quantidadeInput.value) || 0;
+        const descontoPercentual = parseFloat(descontoInput.value) || 0;
+        const subtotal = quantidade * precoBase;
+        const valorDesconto = subtotal * (descontoPercentual / 100);
+        const totalFinal = subtotal - valorDesconto;
+        // Atualiza campo visível
+        precoUnitarioInput.value = "R$ " + totalFinal.toFixed(2);
+        // Atualiza campo hidden enviado ao backend
+        precoItemHidden.value = totalFinal.toFixed(2);
+    }
 
-       function atualizarPreco() {
-           const quantidade = parseInt(quantidadeInput.value) || 0;
-           const descontoPercentual = parseFloat(descontoInput.value) || 0;
-
-           const subtotal = quantidade * precoBase;
-           const valorDesconto = subtotal * (descontoPercentual / 100);
-           const totalFinal = subtotal - valorDesconto;
-
-           // Atualiza campo visível
-           precoUnitarioInput.value = "R$ " + totalFinal.toFixed(2);
-
-           // Atualiza campo hidden enviado ao backend
-           precoItemHidden.value = totalFinal.toFixed(2);
-       }
-
-       atualizarPreco();
-
-       quantidadeInput.addEventListener("input", atualizarPreco);
-       descontoInput.addEventListener("input", atualizarPreco);
+    atualizarPreco();
+    quantidadeInput.addEventListener("input", atualizarPreco);
+    descontoInput.addEventListener("input", atualizarPreco);
 
     const chkMaisPagamento = document.getElementById("chkMaisPagamento");
     const divAdicionalSelect = document.getElementById("formaPagamentoAdicionalSelect");
@@ -137,7 +223,6 @@
 
     // Executa ao carregar
     toggleFormaPagamentoAdicional();
-
     // Executa sempre que o checkbox mudar
     chkMaisPagamento.addEventListener("change", toggleFormaPagamentoAdicional);
 </script>

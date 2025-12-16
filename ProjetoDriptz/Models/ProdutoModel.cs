@@ -30,5 +30,6 @@ namespace ProjetoDriptz.Models
 
         public virtual List<EstoqueModel> Estoques { get; set; }
         public virtual List<VendaModel> Vendas { get; set; }
+        public virtual List<VendaItemModel> VendaItems { get; set; }
     }
 }

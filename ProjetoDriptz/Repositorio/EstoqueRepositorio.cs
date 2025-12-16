@@ -18,6 +18,14 @@ namespace ProjetoDriptz.Repositorio
             
         }
 
+        public List<EstoqueModel> ListarTodosComProduto()
+        {
+            return _bancoContext.Estoques
+                .Include(e => e.Produto)
+                .Where(e => e.Quantidade > 0)
+                .ToList();
+        }
+
         public List<EstoqueModel> BuscarTodos()
         {
             return _bancoContext.Estoques

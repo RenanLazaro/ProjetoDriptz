@@ -43,11 +43,25 @@ namespace ProjetoDriptz.Models.ViewModels
 
         //Campos de Exibição
 
+        // PDV
+        public List<ProdutoEstoqueVm> ProdutosEmEstoque { get; set; } = new();
+
+        public List<VendaItemVm> Itens { get; set; } = new();
 
         [ValidateNever]
         public string NomeProduto { get; set; }
 
 
     }
+
+    public class VendaItemVm
+    {
+        public int ProdutoId { get; set; }
+        public int? EstoqueId { get; set; }
+        public int Quantidade { get; set; }
+        public decimal PrecoUnitario { get; set; }
+        public TamanhoProduto Tamanho { get; set; }
+    }
+
 
 }

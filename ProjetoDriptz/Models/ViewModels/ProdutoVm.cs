@@ -26,4 +26,16 @@ namespace ProjetoDriptz.Models.ViewModels
         [NotMapped]
         public IFormFile? ImagemUpload { get; set; }
     }
+
+    public class ProdutoEstoqueVm
+    {
+        public int EstoqueId { get; set; }
+        public int ProdutoId { get; set; }
+        public string NomeProduto { get; set; }
+        public string Preco { get; set; }
+        public TamanhoProduto Tamanho { get; set; }
+        public int QuantidadeDisponivel { get; set; }
+        public string? Imagem { get; set; }
+    }
+
 }

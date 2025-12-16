@@ -7,6 +7,7 @@ namespace ProjetoDriptz.Repositorio
         EstoqueModel ListarPorIId(int id);
         EstoqueModel BuscarPorProdutoId(int produtoId);
         List<EstoqueModel> BuscarTodos();
+        List<EstoqueModel> ListarTodosComProduto();
         EstoqueModel Adicionar(EstoqueModel produto);
 
         EstoqueModel Editar(EstoqueModel produto);

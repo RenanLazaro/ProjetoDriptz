@@ -1,0 +1,244 @@
+﻿@using ProjetoDriptz.Enums
+@using ProjetoDriptz.Models.ViewModels
+@model VendaVm
+@{
+    ViewData["Title"] = "Criar Venda";
+}
+<style>
+    .pdv-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        background: #f5f7fb;
+    }
+
+    .pdv-produtos, .pdv-carrinho {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-bottom: 15px;
+    }
+
+    .produtos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+
+    .produto-card {
+        background: #f0f4ff;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .produto-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .produto-img {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .pdv-carrinho h4 {
+        margin-bottom: 15px;
+    }
+
+    .carrinho-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .resumo {
+        border-top: 1px solid #eee;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+
+    .desconto {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin: 10px 0;
+    }
+
+        .desconto input {
+            width: 60px;
+            padding: 5px;
+        }
+
+    .negativo {
+        color: green;
+    }
+
+    .btn-finalizar {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+
+    .produto-img {
+        width: 100%;
+        height: 120px;
+        object-fit: contain;
+        margin-bottom: 10px;
+    }
+</style>
+
+
+<form asp-controller="Venda" asp-action="Criar" method="post">
+<div class="pdv-container">
+
+    <!-- LADO ESQUERDO -->
+    <div class="pdv-produtos">
+        <h4>Ponto de Venda</h4>
+
+        <input type="text" class="search-input" placeholder="Buscar produtos..." />
+
+        <div class="produtos-grid">
+            @foreach (var item in Model.ProdutosEmEstoque)
+            {
+                <div class="produto-card"
+                     onclick="adicionarProduto(@item.EstoqueId, '@item.NomeProduto', @item.Preco)">
+
+                    <img src="~/imagens/produtos/@(item.Imagem ?? "sem-imagem.png")"
+                         class="produto-img"
+                         alt="@item.NomeProduto" />
+
+                    <strong>@item.NomeProduto</strong>
+                    <span>@item.Tamanho</span>
+                    <p>R$ @item.Preco</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- LADO DIREITO -->
+    <div class="pdv-carrinho">
+        <h4>Carrinho de Compras</h4>
+
+        <div id="listaCarrinho"></div>
+            <input type="hidden" asp-for="ProdutoId" />
+            <input type="hidden" asp-for="EstoqueId" />
+            <input type="hidden" asp-for="Tamanho" />
+            <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
+        <div class="resumo">
+            <div>Subtotal: <span id="subtotal">R$ 0,00</span></div>
+
+            <div class="desconto">
+                <span>%</span>
+                <input type="number" id="desconto" value="0" />
+            </div>
+
+            <div class="linha-desconto">
+                Desconto (<span id="percentual">0</span>%):
+                <span class="negativo" id="valorDesconto">- R$ 0,00</span>
+            </div>
+
+            <h3>Total: <span id="total">R$ 0,00</span></h3>
+
+                <div class="form-group form-check">
+                    <input asp-for="PossuiMaisDeUmaFormaPagamento" type="checkbox" class="form-check-input" id="chkMaisPagamento" />
+                    <label class="form-check-label" for="chkMaisPagamento">Possui mais de uma forma de pagamento?</label>
+                </div>
+
+                <button class="btn-finalizar" type="submit" onclick="gerarInputsVenda()">Finalizar Venda</button>
+
+
+        </div>
+    </div>
+</div>
+</form>
+<script>
+    let carrinho = [];
+
+    function adicionarProduto(estoqueId, produtoId, nome, preco, tamanho) {
+        const item = carrinho.find(p => p.estoqueId === estoqueId);
+
+        if (item) {
+            item.quantidade++;
+        } else {
+            carrinho.push({
+                produtoId,
+                estoqueId,
+                nome,
+                preco,
+                quantidade: 1,
+                tamanho
+            });
+        }
+
+        renderCarrinho();
+    }
+
+
+
+    function renderCarrinho() {
+        const lista = document.getElementById("listaCarrinho");
+        lista.innerHTML = "";
+
+        let subtotal = 0;
+
+        carrinho.forEach(item => {
+            subtotal += item.preco * item.qtd;
+
+            lista.innerHTML += `
+                <div class="carrinho-item">
+                    <span>${item.nome} (${item.qtd})</span>
+                    <strong>R$ ${(item.preco * item.qtd).toFixed(2)}</strong>
+                </div>
+            `;
+        });
+
+        document.getElementById("subtotal").innerText = "R$ " + subtotal.toFixed(2);
+
+        atualizarTotal(subtotal);
+    }
+
+    document.getElementById("desconto").addEventListener("input", () => {
+        const subtotal = carrinho.reduce((s, i) => s + i.preco * i.qtd, 0);
+        atualizarTotal(subtotal);
+    });
+
+    function atualizarTotal(subtotal) {
+        const perc = parseFloat(document.getElementById("desconto").value) || 0;
+        const desc = subtotal * (perc / 100);
+
+        document.getElementById("percentual").innerText = perc;
+        document.getElementById("valorDesconto").innerText = "- R$ " + desc.toFixed(2);
+        document.getElementById("total").innerText = "R$ " + (subtotal - desc).toFixed(2);
+    }
+
+            function gerarInputsVenda() {
+        const container = document.getElementById("inputsVenda");
+        container.innerHTML = "";
+
+        carrinho.forEach((item, index) => {
+            container.innerHTML += `
+                <input type="hidden" name="Itens[${index}].ProdutoId" value="${item.produtoId}" />
+                <input type="hidden" name="Itens[${index}].EstoqueId" value="${item.estoqueId}" />
+                <input type="hidden" name="Itens[${index}].Quantidade" value="${item.quantidade}" />
+                <input type="hidden" name="Itens[${index}].Tamanho" value="${item.tamanho}" />
+                <input type="hidden" name="Itens[${index}].PrecoUnitario" value="${item.preco.toFixed(2)}" />
+            `;
+        });
+    }
+        </script>

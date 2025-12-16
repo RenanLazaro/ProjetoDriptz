@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjetoDriptz.Models
 {
@@ -40,6 +39,8 @@ namespace ProjetoDriptz.Models
 
         public ProdutoModel? Produto { get; set; }
         public EstoqueModel? Estoque { get; set; }
-      
+
+        public virtual List<VendaItemModel> VendasItems { get; set; }
+
     }
 }

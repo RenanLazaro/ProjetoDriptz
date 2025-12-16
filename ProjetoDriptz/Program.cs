@@ -17,6 +17,7 @@ builder.Services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
 builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
 builder.Services.AddScoped<IEstoqueRepositorio, EstoqueRepositorio>();
 builder.Services.AddScoped<IVendaRepositorio, VendaRepositorio>();
+builder.Services.AddScoped<IVendaItemRepositorio, VendaItemRepositorio>();
 
 builder.Services.AddScoped<IEmail, Email>();
 builder.Services.AddScoped<ISessao, Sessao>();

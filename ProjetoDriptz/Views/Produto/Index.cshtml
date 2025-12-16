@@ -1,95 +1,122 @@
 ﻿@using ProjetoDriptz.Enums
 @model List<ProdutoModel>
-
 @{
     ViewData["Title"] = "Lista de Produtos";
 }
 
-<div class="text-center">
+<style>
+    .product-card {
+        background: linear-gradient(135deg, #f0f4ff, #e0e7ff); /* Tons azulados/lilás como na imagem */
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        padding: 20px;
+        height: 100%;
+    }
 
-    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-        <a class="btn btn-primary"
-           role="button"
-           asp-controller="Produto"
-           asp-action="Criar">
-            Adicionar Novo Produto
-        </a>
+    .product-icon {
+        font-size: 3rem;
+        color: #007bff; 
+        margin-bottom: 15px;
+    }
+
+    .product-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-name {
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .product-details {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .btn-group .btn {
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+
+    .container-products {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="container-products">
+    <div class="text-center">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a class="btn btn-primary"
+               role="button"
+               asp-controller="Produto"
+               asp-action="Criar">
+                Adicionar Novo Produto
+            </a>
+        </div>
+        <br />
+        @if (TempData["MensagemSucesso"] != null)
+        {
+            <div class="alert alert-success" role="alert">
+                <button type="button" class="btn btn-danger btn-sm close-alert">X</button>
+                @TempData["MensagemSucesso"]
+            </div>
+        }
+        @if (TempData["MensagemErro"] != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                <button type="button" class="btn btn-danger btn-sm close-alert">X</button>
+                @TempData["MensagemErro"]
+            </div>
+        }
+        <h1>Lista de Produtos</h1>
     </div>
 
-    <br />
-
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-success" role="alert">
-            <button type="button" class="btn btn-danger btn-sm close-alert">X</button>
-            @TempData["MensagemSucesso"]
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger" role="alert">
-            <button type="button" class="btn btn-danger btn-sm close-alert">X</button>
-            @TempData["MensagemErro"]
-        </div>
-    }
-
-    <h1>Lista de Produtos</h1>
-
-    <table class="table table-striped align-middle" id="table-grid">
-        <thead>
-            <tr>
-                <th scope="col">Imagem</th>
-                <th scope="col">Produto</th>
-                <th scope="col">Tipo</th>
-                <th scope="col">Preço de Custo</th>
-                <th scope="col">Preço</th>
-                <th scope="col">Ações</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @if (Model != null && Model.Any())
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            foreach (ProdutoModel produto in Model)
             {
-                foreach (ProdutoModel produto in Model)
-                {
-                    <tr>
-                        <!-- IMAGEM COM LINK -->
-                        <td>
+                <div class="col-md-4 mb-4"> <!-- Grid responsivo: 3 cards por linha em md+ -->
+                    <div class="card product-card">
+                        <div class="card-body">
                             @if (!string.IsNullOrEmpty(produto.Imagem))
                             {
                                 <a href="~/imagens/produtos/@produto.Imagem" target="_blank">
                                     <img src="~/imagens/produtos/@produto.Imagem"
                                          alt="Imagem do produto"
-                                         style="width:50px;
-                                        height:50px;
-                                        object-fit:cover;
-                                        border-radius:6px;
-                                        box-shadow:0 2px 6px rgba(0,0,0,0.15);" />
+                                         class="product-image" />
                                 </a>
-
                             }
                             else
                             {
-                                <span class="text-muted">Sem imagem</span>
+                                <div class="product-icon">🛍️</div> <!-- Ícone placeholder como na imagem -->
                             }
-                </td>
-
-                <td>@produto.NomeProduto</td>
-
-                <td>
-                    @(produto.Tipo == (int)TipoProduto.Camisa ? "Camisa"
-                                        : produto.Tipo == (int)TipoProduto.BlusaDeFrio ? "Blusa de Frio"
-                                        : produto.Tipo == (int)TipoProduto.Boné ? "Boné"
-                                        : produto.Tipo == (int)TipoProduto.Bermuda ? "Bermuda"
-                                        : "Indefinido")
-                                                   </td>
-
-                        <td>R$ @produto.PrecoCusto</td>
-
-                        <td>R$ @produto.Preco</td>
-
-                        <td>
+                            <h5 class="product-name">@produto.NomeProduto</h5>
+                            <p class="product-details">
+                                @(produto.Tipo == (int)TipoProduto.Camisa ? "Camisa"
+                                    : produto.Tipo == (int)TipoProduto.BlusaDeFrio ? "Blusa de Frio"
+                                    : produto.Tipo == (int)TipoProduto.Boné ? "Boné"
+                                    : produto.Tipo == (int)TipoProduto.Bermuda ? "Bermuda"
+                                    : "Indefinido")
+                            </p>
+                            <p class="product-details">Preço de Custo: R$ @produto.PrecoCusto</p>
+                            <p class="product-price">R$ @produto.Preco</p>
                             <div class="btn-group" role="group">
                                 <a class="btn btn-primary"
                                    asp-controller="Produto"
@@ -97,7 +124,6 @@
                                    asp-route-id="@produto.Id">
                                     Editar
                                 </a>
-
                                 <a class="btn btn-danger"
                                    asp-controller="Produto"
                                    asp-action="ApagarConfirmacao"
@@ -105,10 +131,16 @@
                                     Apagar
                                 </a>
                             </div>
-                        </td>
-                    </tr>
-                        }
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-center text-muted">Nenhum produto encontrado.</p>
+            </div>
+        }
+    </div>
 </div>
