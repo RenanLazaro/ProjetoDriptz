@@ -32,7 +32,24 @@ namespace ProjetoDriptz.Repositorio
                 .Include(e => e.Produto)  // Carrega o produto relacionado
                 .ToList();
         }
+        public EstoqueModel BuscarPorProdutoETamanho(int produtoId, int tamanho)
+        {
+            // 🔥 REMOVA .AsNoTracking() se existir
+            // 🔥 Use FirstOrDefault em vez de SingleOrDefault se houver duplicatas
 
+            return _bancoContext.Estoques
+                .Include(e => e.Produto) // Se precisar carregar o produto
+                .FirstOrDefault(e => e.ProdutoId == produtoId && e.Tamanho == tamanho);
+        }
+
+
+        public List<EstoqueModel> BuscarPorProdutosETamanhos(List<int> produtoIds, List<int> tamanhos)
+{
+            return _bancoContext.Estoques
+                .Include(e => e.Produto)
+                .Where(e => produtoIds.Contains(e.ProdutoId) && tamanhos.Contains(e.Tamanho))
+                .ToList();
+        }
 
         public EstoqueModel BuscarPorProdutoId(int produtoId)
         {

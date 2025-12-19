@@ -171,7 +171,7 @@ namespace ProjetoDriptz.Controllers
                     NomeProduto = produtoVm.NomeProduto,
                     Tipo = (int)produtoVm.Tipo,
                     PrecoCusto = produtoVm.PrecoCusto, 
-                    Preco = produtoVm.Preco,
+                     Preco = produtoVm.Preco,
                     Imagem = nomeImagem // Aqui você salva o nome da imagem
                 };
 

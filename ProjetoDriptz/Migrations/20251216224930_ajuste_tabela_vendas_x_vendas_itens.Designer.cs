@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjetoDriptz.Data;
 
@@ -11,9 +12,11 @@ using ProjetoDriptz.Data;
 namespace ProjetoDriptz.Migrations
 {
     [DbContext(typeof(BancoContext))]
-    partial class BancoContextModelSnapshot : ModelSnapshot
+    [Migration("20251216224930_ajuste_tabela_vendas_x_vendas_itens")]
+    partial class ajuste_tabela_vendas_x_vendas_itens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,8 +69,9 @@ namespace ProjetoDriptz.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Preco")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("Preco")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("PrecoCusto")
                         .HasColumnType("decimal(18,2)");
@@ -169,6 +173,9 @@ namespace ProjetoDriptz.Migrations
                     b.Property<DateTime>("DataVenda")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("EstoqueModelId")
+                        .HasColumnType("int");
+
                     b.Property<int>("FormaDePagamento")
                         .HasColumnType("int");
 
@@ -178,6 +185,9 @@ namespace ProjetoDriptz.Migrations
                     b.Property<bool>("PossuiMaisDeUmaFormaPagamento")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("ProdutoModelId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("ValorAdicional")
                         .HasColumnType("decimal(18,2)");
 
@@ -185,6 +195,10 @@ namespace ProjetoDriptz.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EstoqueModelId");
+
+                    b.HasIndex("ProdutoModelId");
 
                     b.ToTable("Vendas", (string)null);
                 });
@@ -227,8 +241,21 @@ namespace ProjetoDriptz.Migrations
                     b.Navigation("Venda");
                 });
 
+            modelBuilder.Entity("ProjetoDriptz.Models.VendaModel", b =>
+                {
+                    b.HasOne("ProjetoDriptz.Models.EstoqueModel", null)
+                        .WithMany("Vendas")
+                        .HasForeignKey("EstoqueModelId");
+
+                    b.HasOne("ProjetoDriptz.Models.ProdutoModel", null)
+                        .WithMany("Vendas")
+                        .HasForeignKey("ProdutoModelId");
+                });
+
             modelBuilder.Entity("ProjetoDriptz.Models.EstoqueModel", b =>
                 {
+                    b.Navigation("Vendas");
+
                     b.Navigation("VendasItens");
                 });
 
@@ -237,6 +264,8 @@ namespace ProjetoDriptz.Migrations
                     b.Navigation("Estoques");
 
                     b.Navigation("VendaItems");
+
+                    b.Navigation("Vendas");
                 });
 
             modelBuilder.Entity("ProjetoDriptz.Models.VendaModel", b =>

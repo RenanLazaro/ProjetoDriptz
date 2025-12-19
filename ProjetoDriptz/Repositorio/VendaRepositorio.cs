@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjetoDriptz.Data;
 using ProjetoDriptz.Models;
+using ProjetoDriptz.Models.ViewModels;
 
 namespace ProjetoDriptz.Repositorio
 {
@@ -16,16 +17,45 @@ namespace ProjetoDriptz.Repositorio
         {
          //  return _bancoContext.Estoques.FirstOrDefault(x => x.Id == id);
             return _bancoContext.Vendas
-                .Include(e => e.Produto)  // Carrega o produto relacionado
                 .FirstOrDefault(x => x.Id == id);
         }
 
         public List<VendaModel> BuscarTodos()
         {
             return _bancoContext.Vendas
-                .Include(e => e.Produto)  // Carrega o produto relacionado
                 .ToList();
         }
+
+
+        public List<VendaModel> BuscarTodosComItens()
+        {
+            return _bancoContext.Vendas
+                .Include(v => v.VendaItens)
+                    .ThenInclude(vi => vi.Estoque)
+                        .ThenInclude(e => e.Produto)
+                .ToList();
+        }
+
+
+        public VendaModel BuscarComItens(int id)
+        {
+            return _bancoContext.Vendas
+                .Include(v => v.VendaItens)
+                    .ThenInclude(vi => vi.Estoque)
+                        .ThenInclude(e => e.Produto)
+                .FirstOrDefault(v => v.Id == id);
+        }
+
+        public void RemoverItem(VendaItemModel item)
+        {
+            _bancoContext.VendasItens.Remove(item);
+        }
+
+        public void Salvar()
+        {
+            _bancoContext.SaveChanges();
+        }
+
 
 
         public VendaModel Adicionar(VendaModel venda)
@@ -47,10 +77,6 @@ namespace ProjetoDriptz.Repositorio
             if (vendaDb == null)
                 throw new Exception("Houve um erro na atualização do produto.");
 
-            vendaDb.ProdutoId = venda.ProdutoId;
-            vendaDb.Tamanho = venda.Tamanho;
-           // vendaDb.Cor = venda.Cor;
-            vendaDb.Quantidade = venda.Quantidade;
 
             _bancoContext.Vendas.Update(vendaDb);
             _bancoContext.SaveChanges();

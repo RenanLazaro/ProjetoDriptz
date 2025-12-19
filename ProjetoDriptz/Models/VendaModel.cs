@@ -7,19 +7,7 @@ namespace ProjetoDriptz.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Campo Obrigatório")]
-        public int ProdutoId { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public int EstoqueId { get; set; }
-        
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public int Tamanho { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public int Quantidade { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public string PrecoItem { get; set; }
+        public DateTime DataVenda { get; set; }
 
         [Required(ErrorMessage = "Campo Obrigatório")]
         public int FormaDePagamento { get; set; }
@@ -29,18 +17,13 @@ namespace ProjetoDriptz.Models
         
         public bool PossuiMaisDeUmaFormaPagamento { get; set; }
 
+        [Required(ErrorMessage = "Campo Obrigatório")]
+        public decimal ValorAdicional { get; set; }
 
         [Required(ErrorMessage = "Campo Obrigatório")]
-        public string? ValorAdicional { get; set; }
+        public decimal ValorTotal { get; set; }
 
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public DateTime DataVenda { get; set; }
-
-
-        public ProdutoModel? Produto { get; set; }
-        public EstoqueModel? Estoque { get; set; }
-
-        public virtual List<VendaItemModel> VendasItems { get; set; }
+        public virtual List<VendaItemModel> VendaItens { get; set; }
 
     }
 }

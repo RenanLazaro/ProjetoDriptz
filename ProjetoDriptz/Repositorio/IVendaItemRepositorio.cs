@@ -5,5 +5,6 @@ namespace ProjetoDriptz.Repositorio
     public interface IVendaItemRepositorio
     {
         VendaItemModel Adicionar(VendaItemModel venda);
+        bool Excluir(int id);
     }
 }

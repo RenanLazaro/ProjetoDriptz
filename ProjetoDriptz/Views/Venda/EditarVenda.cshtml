@@ -4,119 +4,369 @@
 @{
     ViewData["Title"] = "Editar Venda";
 }
+<style>
+    .pdv-container {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+    }
 
-<div class="text-center">
-    <h1 class="display-4">Editar Venda</h1>
+    .pdv-produtos {
+        flex: 2;
+    }
+
+    .pdv-carrinho {
+        flex: 1;
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .produto-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .produto-card {
+        background: #f4f6ff;
+        padding: 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+
+    .produto-preco {
+        color: #2563eb;
+        font-weight: bold;
+    }
+
+    .carrinho-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .produto-img {
+    height: 120px;
+    width: 100%;
+    background: #dfe4ff;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.produto-img a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* ou use 'cover' para preencher todo o espaço */
+    padding: 5px;
+}
+
+.product-icon {
+    font-size: 2.5rem;
+    color: #6b7280;
+}
+
+.produto-card {
+    background: #f4f6ff;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.produto-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+</style>
+
+<div class="container-sale">
+    <div class="text-center">
+        <h1>Editar Venda</h1>
+    </div>
+    <form asp-controller="Venda" asp-action="Alterar" method="post">
+
+        <!-- ================= DADOS FIXOS DA VENDA ================= -->
+
+
+        <div class="form-group">
+            <label>Forma de Pagamento</label>
+            <select asp-for="FormaDePagamento"
+                    class="form-control"
+                    asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
+            </select>
+        </div>
+
+<input type="hidden" asp-for="ValorTotal" id="inputValorTotal" />
+<input type="hidden" asp-for="DescontoPercentual" id="inputDescontoPercentual" value="0" />
+<input type="hidden" asp-for="Id" id="Id" />
+
+        <div class="form-check mb-2">
+            <input asp-for="PossuiMaisDeUmaFormaPagamento"
+                   type="checkbox"
+                   class="form-check-input"
+                   id="chkMaisPagamento" />
+            <label class="form-check-label" for="chkMaisPagamento">
+                Possui mais de uma forma de pagamento?
+            </label>
+        </div>
+
+        <div id="pagamentoAdicional" style="display:none;">
+            <div class="form-group">
+                <label>Forma de Pagamento Adicional</label>
+                <select asp-for="FormaDePagamentoAdicional"
+                        class="form-control"
+                        asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Valor Adicional</label>
+                <input asp-for="ValorAdicional"
+                       type="number"
+                       step="0.01"
+                       class="form-control" />
+            </div>
+        </div>
+
+        <!-- ================= PDV ================= -->
+        <div class="pdv-container">
+
+            <!-- LADO ESQUERDO -->
+            <div class="pdv-produtos">
+                <h4>Ponto de Venda</h4>
+
+                <input type="text"
+                       class="form-control mb-3"
+                       placeholder="Buscar produtos..." />
+
+                <div class="produto-grid">
+                    @foreach (var estoque in ViewBag.Estoques)
+                    {
+                        <div class="produto-card"
+                             onclick="adicionarItem(@estoque.ProdutoId, @estoque.EstoqueId, @estoque.Tamanho, '@estoque.NomeProduto', @estoque.Preco)">
+                            <div class="produto-img">
+                                @if (!string.IsNullOrEmpty(estoque.ImagemUrl))
+                                {
+                                    <a href="~/imagens/produtos/@estoque.ImagemUrl" target="_blank">
+                                        <img src="~/imagens/produtos/@estoque.ImagemUrl"
+                                             alt="Imagem do produto"
+                                             class="product-image" />
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="product-icon">🛍️</div> <!-- Ícone placeholder como na imagem -->
+                                }
+                            </div>
+                            <strong>@estoque.NomeProduto</strong>
+                            <div class="text-muted small">@estoque.TamanhoNome</div>
+                            <div class="produto-preco">R$ @estoque.Preco.ToString("F2")</div>
+                            <small class="text-muted">Disp: @estoque.QuantidadeDisponivel</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- LADO DIREITO -->
+            <div class="pdv-carrinho">
+                <h4>Carrinho de Compras</h4>
+
+                <div id="listaCarrinho"></div>
+
+                <hr />
+
+                <div class="resumo">
+                    <div>Subtotal: <span id="subtotal">R$ 0,00</span></div>
+
+                    <div class="desconto">
+                        <span>%</span>
+                        <input type="number"
+                               id="desconto"
+                               min="0"
+                               max="100"
+                               value="0" />
+                    </div>
+
+                    <div class="desconto-valor">
+                        Desconto (<span id="descontoPercentual">0</span>%):
+                        <span id="valorDesconto">R$ 0,00</span>
+                    </div>
+
+                    <h4>Total: <span id="total">R$ 0,00</span></h4>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= ITENS DA VENDA (GERADOS VIA JS) ================= -->
+        <div id="itensVenda"></div>
+
+        <!-- ================= BOTÕES ================= -->
+        <button type="submit" class="btn btn-success w-100 mt-3">
+            ALterar Venda
+        </button>
+
+        <br /><br />
+
+        <a class="btn btn-secondary d-block"
+           asp-controller="Venda"
+           asp-action="Index">
+            Cancelar
+        </a>
+
+    </form>
+
 </div>
 
-<form asp-controller="Venda" asp-action="Alterar" method="post">
-    <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="EstoqueId" />
-
-    <div class="form-group">
-        <label for="ProdutoId">Produto</label>
-        <select asp-for="ProdutoId" class="form-control" asp-items="@((List<SelectListItem>)ViewData["Produtos"])">
-            <option value="">-- Selecione um Produto --</option>
-        </select>
-        @Html.ValidationMessageFor(x => x.ProdutoId)
-    </div>
-
-    <div class="form-group">
-        <label for="Tamanho">Tamanho</label>
-        <select asp-for="Tamanho" class="form-control"
-                asp-items="Html.GetEnumSelectList<TamanhoProduto>()">
-        </select>
-        @Html.ValidationMessageFor(x => x.Tamanho)
-    </div>
-
-
-    <div class="form-group">
-        <label for="quantidade">Quantidade</label>
-        <input type="number" asp-for="Quantidade" class="form-control" id="quantidade" min="0" />
-        @Html.ValidationMessageFor(x => x.Quantidade)
-    </div>
-
-    <div class="form-group">
-        <label for="PrecoItem">Valor</label>
-        <input type="text" asp-for="PrecoItem" class="form-control" id="precoUnitario" readonly />
-        <input type="hidden" asp-for="PrecoItem" id="precoItemHidden" />
-        @Html.ValidationMessageFor(x => x.PrecoItem)
-    </div>
-
-
-    <div class="form-group">
-        <label>Forma de Pagamento</label>
-        <select asp-for="FormaDePagamento" class="form-control"
-                asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
-        </select>
-        @Html.ValidationMessageFor(x => x.FormaDePagamento)
-    </div>
-
-    <div class="form-group form-check">
-        <input asp-for="PossuiMaisDeUmaFormaPagamento" type="checkbox" class="form-check-input" id="chkMaisPagamento" />
-        <label class="form-check-label" for="chkMaisPagamento">Possui mais de uma forma de pagamento?</label>
-    </div>
-
-    <div class="form-group" id="formaPagamentoAdicionalSelect" style="display:none;">
-        <label>Forma de Pagamento Adicional</label>
-        <select asp-for="FormaDePagamentoAdicional" class="form-control"
-                asp-items="Html.GetEnumSelectList<FormaDePagamento>()">
-        </select>
-    </div>
-
-    <div class="form-group" id="formaPagamentoAdicionalValor" style="display:none;">
-        <label>Valor Adicional</label>
-        <input type="text" asp-for="ValorAdicional" class="form-control" />
-    </div>
-
-    <br />
-    <button type="submit" class="btn btn-primary w-100">Alterar</button>
-    <br />
-    <br />
-    <a class="btn btn-secondary d-block" asp-controller="Venda" asp-action="Index" role="button">Voltar</a>
-</form>
-
 <script>
-        const quantidadeInput = document.getElementById("quantidade");
-    const precoUnitarioInput = document.getElementById("precoUnitario");
-    const precoItemHidden = document.getElementById("precoItemHidden");
 
-    const precoBase = parseFloat("@Model.PrecoItem");
+        const itensVendaExistentes = @Html.Raw(
+        System.Text.Json.JsonSerializer.Serialize(
+            Model.Itens.Select(i => new {
+                produtoId = i.ProdutoId,
+                estoqueId = i.EstoqueId,
+                tamanho = i.Tamanho,
+                quantidade = i.Quantidade,
+                preco = i.PrecoUnitario,
+                nome = i.NomeProduto
+            })
+        )
+    );
 
-    function atualizarPreco() {
-        const quantidade = parseInt(quantidadeInput.value) || 0;
-        const total = quantidade * precoBase;
+   let carrinho = [];
 
-        // Atualiza o campo visível
-        precoUnitarioInput.value = "R$ " + total.toFixed(2);
+if (itensVendaExistentes && itensVendaExistentes.length > 0) {
+    carrinho = itensVendaExistentes.map(i => ({
+        produtoId: i.produtoId,
+        estoqueId: i.estoqueId,
+        tamanho: i.tamanho,
+        nome: i.nome,
+        preco: i.preco,
+        quantidade: i.quantidade
+    }));
 
-        // Atualiza o campo hidden que será enviado ao servidor
-        precoItemHidden.value = total.toFixed(2);
-    }
-
-    atualizarPreco();
-    quantidadeInput.addEventListener("input", atualizarPreco);
+    renderCarrinho();
+}
 
 
+       function adicionarItem(produtoId, estoqueId, tamanho, nome, preco) {
+        // ✅ Busca pelo estoqueId (único por produto + tamanho)
+        const item = carrinho.find(i => i.estoqueId === estoqueId);
 
-
-    const chkMaisPagamento = document.getElementById("chkMaisPagamento");
-    const divAdicionalSelect = document.getElementById("formaPagamentoAdicionalSelect");
-    const divAdicionalValor = document.getElementById("formaPagamentoAdicionalValor");
-
-    function toggleFormaPagamentoAdicional() {
-        if (chkMaisPagamento.checked) {
-            divAdicionalSelect.style.display = "block";
-            divAdicionalValor.style.display = "block";
+        if (item) {
+            item.quantidade++;
         } else {
-            divAdicionalSelect.style.display = "none";
-            divAdicionalValor.style.display = "none";
+            carrinho.push({
+                produtoId: produtoId,
+                estoqueId: estoqueId,
+                tamanho: tamanho,
+                nome: nome,
+                preco: preco,
+                quantidade: 1
+            });
         }
+
+        renderCarrinho();
     }
 
-    // Executa ao carregar
-    toggleFormaPagamentoAdicional();
+    function renderCarrinho() {
+    const lista = document.getElementById("listaCarrinho");
+    const itensVenda = document.getElementById("itensVenda");
 
-    // Executa sempre que o checkbox mudar
-    chkMaisPagamento.addEventListener("change", toggleFormaPagamentoAdicional);
+    lista.innerHTML = "";
+    itensVenda.innerHTML = "";
+
+    let subtotal = 0;
+
+    carrinho.forEach((item, index) => {
+        const totalItem = item.preco * item.quantidade;
+        subtotal += totalItem;
+
+        const tamanhoNome = getTamanhoNome(item.tamanho);
+
+        lista.innerHTML += `
+            <div class="carrinho-item">
+                <div>
+                    <strong>${item.nome}</strong> <span class="badge bg-secondary">${tamanhoNome}</span><br/>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="alterarQuantidade(${item.estoqueId}, -1)">-</button>
+                    <span class="mx-2">${item.quantidade}</span>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="alterarQuantidade(${item.estoqueId}, 1)">+</button>
+                </div>
+                <div>R$ ${totalItem.toFixed(2)}</div>
+            </div>
+        `;
+
+        // ✅ ADICIONE O NomeProduto AQUI
+        itensVenda.innerHTML += `
+            <input type="hidden" name="Itens[${index}].ProdutoId" value="${item.produtoId}" />
+            <input type="hidden" name="Itens[${index}].EstoqueId" value="${item.estoqueId}" />
+            <input type="hidden" name="Itens[${index}].Quantidade" value="${item.quantidade}" />
+            <input type="hidden" name="Itens[${index}].PrecoUnitario" value="${item.preco}" />
+            <input type="hidden" name="Itens[${index}].Tamanho" value="${item.tamanho}" />
+            <input type="hidden" name="Itens[${index}].NomeProduto" value="${item.nome}" />
+        `;
+    });
+
+    aplicarDesconto(subtotal);
+}
+
+    function alterarQuantidade(estoqueId, delta) {
+        const item = carrinho.find(i => i.estoqueId === estoqueId);
+        if (!item) return;
+
+        item.quantidade += delta;
+
+        if (item.quantidade <= 0) {
+            carrinho = carrinho.filter(i => i.estoqueId !== estoqueId);
+        }
+
+        renderCarrinho();
+    }
+
+    function getTamanhoNome(tamanhoEnum) {
+        const tamanhos = {
+            0: 'PP',
+            1: 'P',
+            2: 'M',
+            3: 'G',
+            4: 'GG',
+            5: 'XG'
+        };
+        return tamanhos[tamanhoEnum] || tamanhoEnum;
+    }
+
+    document.getElementById("desconto").addEventListener("input", () => {
+        const subtotal = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
+        aplicarDesconto(subtotal);
+    });
+
+  function aplicarDesconto(subtotal) {
+    const desconto = parseFloat(document.getElementById("desconto").value) || 0;
+    const valorDesc = subtotal * (desconto / 100);
+    const total = subtotal - valorDesc;
+    document.getElementById("subtotal").innerText = `R$ ${subtotal.toFixed(2)}`;
+    document.getElementById("descontoPercentual").innerText = desconto;  // Already there, but fixed selector
+    document.getElementById("valorDesconto").innerText = `R$ ${valorDesc.toFixed(2)}`;  // Fixed sign
+    document.getElementById("total").innerText = `R$ ${total.toFixed(2)}`;
+    document.getElementById("inputValorTotal").value = total.toFixed(2);
+    document.getElementById("inputDescontoPercentual").value = desconto;  // NEW: Send discount to backend
+}
 </script>

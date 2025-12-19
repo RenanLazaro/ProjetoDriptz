@@ -1,18 +1,84 @@
-﻿@model VendaModel
+﻿@using ProjetoDriptz.Enums
+@using ProjetoDriptz.Models.ViewModels
+@model VendaVm
 @{
-    ViewData["Title"] = "Confirmação de apagar o Estoque";
+    ViewData["Title"] = "Confirmação de Exclusão da Venda";
 }
 
-<div class="text-center">
 
+<style>
+    .card {
+        border: none;
+    }
+</style>
 
- <h3>
-     Realmente deseja apagar o Produto  (@Model.Produto?.NomeProduto)?
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <h3 class="text-danger">⚠️ Confirmação de Exclusão</h3>
+        <p class="lead">Realmente deseja apagar esta venda?</p>
+    </div>
 
- </h3>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Detalhes da Venda #@Model.Id</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Data:</strong> @Model.DataVenda.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p><strong>Forma de Pagamento:</strong> @Model.FormaDePagamento.ToString()</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Valor Total:</strong> <span class="text-danger fw-bold fs-5">R$ @Model.ValorTotal.ToString("F2")</span></p>
+                    @if (Model.DescontoPercentual > 0)
+                    {
+                        <p><strong>Desconto:</strong> @Model.DescontoPercentual%</p>
+                    }
+                </div>
+            </div>
 
+            @if (Model.Itens != null && Model.Itens.Any())
+            {
+                <hr />
+                <h6>Itens da Venda:</h6>
+                <ul class="list-group">
+                    @foreach (var item in Model.Itens)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                @(item.NomeProduto ?? "Produto")
+                                <span class="badge bg-secondary">@item.Tamanho.ToString()</span>
+                            </span>
+                            <span>
+                                @item.Quantidade x R$ @item.PrecoUnitario.ToString("F2") =
+                                <strong>R$ @((item.Quantidade * item.PrecoUnitario).ToString("F2"))</strong>
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>Atenção!</strong> Esta ação não pode ser desfeita. O estoque será devolvido automaticamente.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <a role="button" class="btn btn-secondary w-100 btn-lg"
+               asp-controller="Venda" asp-action="Index">
+                <i class="bi bi-arrow-left"></i> Cancelar Exclusão
+            </a>
+        </div>
+        <div class="col-md-6">
+            <form asp-controller="Venda" asp-action="Apagar" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger w-100 btn-lg"
+                        onclick="return confirm('Tem certeza que deseja excluir esta venda?');">
+                    <i class="bi bi-trash"></i> Confirmar Exclusão
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
-
-<a role="button" class="btn btn-primary w-100" asp-controller="Venda" asp-action="Index">Cancelar Exclusão</a>
-<br />
-<a role="button" class="btn btn-danger w-100" asp-controller="Venda" asp-action="Apagar" asp-route-id="@Model.Id">Confirmar Exclusão</a>

@@ -20,7 +20,6 @@ namespace ProjetoDriptz.Models
         public int Quantidade { get; set; }
 
         public ProdutoModel? Produto { get; set; }
-        public virtual List<VendaModel> Vendas { get; set; }
         public virtual List<VendaItemModel> VendasItens { get; set; }
     }
 }

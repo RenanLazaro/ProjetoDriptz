@@ -18,7 +18,7 @@ namespace ProjetoDriptz.Models
         public decimal PrecoCusto { get; set; }
 
         [Required(ErrorMessage = "O tamanho do produto é obrigatório.")]
-        public string Preco { get; set; }
+        public decimal Preco { get; set; }
 
 
         [Required(ErrorMessage = "O tamanho do produto é obrigatório.")]
@@ -29,7 +29,6 @@ namespace ProjetoDriptz.Models
         public IFormFile? ImagemUpload { get; set; }
 
         public virtual List<EstoqueModel> Estoques { get; set; }
-        public virtual List<VendaModel> Vendas { get; set; }
         public virtual List<VendaItemModel> VendaItems { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace ProjetoDriptz.Data.Map
 
                 // Relacionamento com Estoque - CORRIGIDO
                 builder.HasOne(v => v.Venda)
-                       .WithMany(e => e.VendasItems)  // <- AQUI
+                       .WithMany(e => e.VendaItens)  // <- AQUI
                        .HasForeignKey(v => v.VendaId)
                        .OnDelete(DeleteBehavior.Restrict);
 

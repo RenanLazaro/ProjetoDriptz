@@ -1,8 +1,28 @@
 ﻿@using ProjetoDriptz.Enums
-@model List<VendaModel>
+@using ProjetoDriptz.Models.ViewModels
+@model List<VendaVm>
 @{
     ViewData["Title"] = "Vendas";
 }
+
+<style>
+    .product-image {
+        width: 45px; /* tamanho ideal para grid */
+        height: 45px;
+        object-fit: cover; /* não distorce a imagem */
+        border-radius: 6px; /* cantos arredondados */
+        border: 1px solid #ddd;
+    }
+
+    .product-icon {
+        font-size: 28px;
+        line-height: 45px;
+    }
+
+    #table-grid td {
+        vertical-align: middle;
+    }
+</style>
 
 <div class="text-center">
 
@@ -31,50 +51,60 @@
         <thead>
             <tr>
                 <th scope="col">Produto</th>
-                <th scope="col">Tamanho</th>
+                <th scope="col">Nome</th>
                 <th scope="col">Quantidade</th>
                 <th scope="col">Valor</th>
                 <th scope="col">Forma de Pagamento</th>
-                <th scope="col">Mais de uma forma de pagamento?</th>
                 <th scope="col">Data da Venda</th>
                 <th scope="col">Ações</th>
             </tr>
         </thead>
         <tbody>
-            @if (Model != null && Model.Any())
+        <tbody>
+            @foreach (var venda in Model)
             {
-                foreach (VendaModel venda in Model)
-                {
-                    <tr>
-            
-                        <td>@venda.Produto?.NomeProduto</td>
-                        <td>
-                            @(venda.Tamanho == (int)TamanhoProduto.P ? "P"
-                                                : venda.Tamanho == (int)TamanhoProduto.M ? "M"
-                                                : venda.Tamanho == (int)TamanhoProduto.G ? "G"
-                                                : venda.Tamanho == (int)TamanhoProduto.GG ? "GG"
-                                                : "Indefinido")
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(venda.ImagemProduto))
+                        {
+                            <a href="~/imagens/produtos/@venda.ImagemProduto" target="_blank">
+                                <img src="~/imagens/produtos/@venda.ImagemProduto"
+                                     alt="Imagem do produto"
+                                     class="product-image" />
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="product-icon">🛍️</div>
+                        }
                 </td>
-                <td>@venda.Quantidade</td>
-                <td>R$ @venda.PrecoItem</td>
-                   <td>
-                 @(venda.FormaDePagamento == (int)FormaDePagamento.Dinheiro ? "Dinheiro"
-                                                : venda.FormaDePagamento == (int)FormaDePagamento.Pix ? "Pix"
-                                                : venda.FormaDePagamento == (int)FormaDePagamento.Cartao ? "Cartão Crédito/Débito"
-                : "Indefinido")
-                </td>
-                <td>@(venda.PossuiMaisDeUmaFormaPagamento ? "Sim" : "Não")</td>
-                <td>@venda.DataVenda.ToString("dd/MM/yyyy")</td>
+
+
+                    <td>@venda.NomeProduto</td>
+
+                    <td>@venda.Quantidade</td>
+
+                    <td>R$ @venda.ValorProduto</td>
 
                 <td>
-                    <div class="btn-group" role="group" aria-label="Ações">
-                        <a role="button" class="btn btn-primary" asp-route-id="@venda.Id" asp-controller="Venda" asp-action="Editar">Editar</a>
-                        <a role="button" class="btn btn-danger" asp-route-id="@venda.Id" asp-controller="Venda" asp-action="ApagarConfirmacao">Apagar</a>
-                    </div>
+                    @(venda.FormaDePagamento == (int)FormaDePagamento.Dinheiro ? "Dinheiro"
+                                        : venda.FormaDePagamento == (int)FormaDePagamento.Pix ? "Pix"
+                                        : "Cartão")
                 </td>
+
+                    <td>@venda.DataVenda.ToString("dd/MM/yyyy")</td>
+
+                    <td>
+                        <div class="btn-group" role="group" aria-label="Ações">
+                            <a role="button" class="btn btn-primary" asp-route-id="@venda.Id" asp-controller="Venda" asp-action="Editar">Editar</a>
+                            <a role="button" class="btn btn-danger" asp-route-id="@venda.Id" asp-controller="Venda" asp-action="ApagarConfirmacao">Apagar</a>
+                        </div>
+                    </td>
+
             </tr>
                         }
-            }
+        </tbody>
+
         </tbody>
     </table>
 </div>

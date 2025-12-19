@@ -18,7 +18,7 @@ namespace ProjetoDriptz.Models.ViewModels
         public decimal PrecoCusto { get; set; }
 
         [Required(ErrorMessage = "Campo Obrigatório")]
-        public string Preco { get; set; }
+        public decimal Preco { get; set; }
 
 
         public string? Imagem { get; set; }

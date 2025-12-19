@@ -6,6 +6,7 @@ namespace ProjetoDriptz.Repositorio
     {
         ProdutoModel ListarPorIId(int id);
         List<ProdutoModel>BuscarTodos();
+
         ProdutoModel Adicionar(ProdutoModel produto);
 
         ProdutoModel Editar(ProdutoModel produto);

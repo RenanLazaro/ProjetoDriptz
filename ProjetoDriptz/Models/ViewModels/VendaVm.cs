@@ -6,62 +6,57 @@ namespace ProjetoDriptz.Models.ViewModels
 {
     public class VendaVm
     {
-        public int Id { get; set; } 
+        public int Id { get; set; }
+        public DateTime DataVenda { get; set; } = DateTime.Now;
 
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public int ProdutoId { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public int EstoqueId { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public TamanhoProduto Tamanho { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public string PrecoItem { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public int Quantidade { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public FormaDePagamento FormaDePagamento { get; set; }
-
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public FormaDePagamento? FormaDePagamentoAdicional { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
+        public int FormaDePagamento { get; set; }
+        public int? FormaDePagamentoAdicional { get; set; }
         public bool PossuiMaisDeUmaFormaPagamento { get; set; }
 
+        public decimal DescontoPercentual { get; set; }
+        public decimal ValorAdicional { get; set; }
 
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public string? ValorAdicional { get; set; }
-
-        [Required(ErrorMessage = "Campo Obrigatório")]
-        public DateTime DataVenda { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal ValorTotal { get; set; }
 
 
-        //Campos de Exibição
 
-        // PDV
-        public List<ProdutoEstoqueVm> ProdutosEmEstoque { get; set; } = new();
+
+        // Produto
+        [ValidateNever]
+        public string NomeProduto { get; set; }
+        [ValidateNever]
+        public string ImagemProduto { get; set; }
+        public decimal ValorProduto { get; set; }
+
+        // Estoque
+        public int Quantidade { get; set; }
+
 
         public List<VendaItemVm> Itens { get; set; } = new();
 
-        [ValidateNever]
-        public string NomeProduto { get; set; }
-
-
+        public ProdutoModel? Produto { get; set; }
     }
+
 
     public class VendaItemVm
     {
         public int ProdutoId { get; set; }
-        public int? EstoqueId { get; set; }
+        public int EstoqueId { get; set; }
+
+        public string NomeProduto { get; set; }
+        //public string Descricao { get; set; }
+
+        public TamanhoProduto Tamanho { get; set; }
+
         public int Quantidade { get; set; }
         public decimal PrecoUnitario { get; set; }
-        public TamanhoProduto Tamanho { get; set; }
+
+        public decimal SubTotal => Quantidade * PrecoUnitario;
+
     }
+
+
 
 
 }

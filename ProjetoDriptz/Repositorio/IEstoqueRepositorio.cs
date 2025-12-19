@@ -5,6 +5,8 @@ namespace ProjetoDriptz.Repositorio
     public interface IEstoqueRepositorio
     {
         EstoqueModel ListarPorIId(int id);
+        EstoqueModel BuscarPorProdutoETamanho(int produtoId, int tamanho);
+        List<EstoqueModel> BuscarPorProdutosETamanhos(List<int> produtoIds, List<int> tamanhos);
         EstoqueModel BuscarPorProdutoId(int produtoId);
         List<EstoqueModel> BuscarTodos();
         List<EstoqueModel> ListarTodosComProduto();
