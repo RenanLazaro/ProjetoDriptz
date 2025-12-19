@@ -97,16 +97,18 @@
                         <div class="card-body">
                             @if (!string.IsNullOrEmpty(produto.Imagem))
                             {
-                                <a href="~/imagens/produtos/@produto.Imagem" target="_blank">
-                                    <img src="~/imagens/produtos/@produto.Imagem"
+                                <a href="@Url.Content($"/imagens/produtos/{produto.Imagem}")" target="_blank">
+                                    <img src="@Url.Content($"/imagens/produtos/{produto.Imagem}")"
                                          alt="Imagem do produto"
                                          class="product-image" />
                                 </a>
                             }
                             else
                             {
-                                <div class="product-icon">🛍️</div> <!-- Ícone placeholder como na imagem -->
+                                <div class="product-icon">🛍️</div>
                             }
+
+
                             <h5 class="product-name">@produto.NomeProduto</h5>
                             <p class="product-details">
                                 @(produto.Tipo == (int)TipoProduto.Camisa ? "Camisa"
