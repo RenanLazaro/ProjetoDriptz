@@ -50,11 +50,12 @@ builder.Services.Configure<FormOptions>(options =>
 var app = builder.Build();
 
 // ?? APLICA MIGRATIONS AUTOMATICAMENTE (PRODUÇÃO)
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<BancoContext>();
-    db.Database.Migrate();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<BancoContext>();
+//     db.Database.Migrate();
+// }
+
 
 // PIPELINE
 if (!app.Environment.IsDevelopment())
