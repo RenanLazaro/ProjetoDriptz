@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoDriptz.Data;
 using ProjetoDriptz.Helper;
 using ProjetoDriptz.Repositorio;
+using Rotativa.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,7 +62,11 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-
+// ?? CONFIGURAÇÃO OBRIGATÓRIA
+RotativaConfiguration.Setup(
+    app.Environment.WebRootPath,
+    "Rotativa"
+);
 app.MapStaticAssets();
 
 app.MapControllerRoute(

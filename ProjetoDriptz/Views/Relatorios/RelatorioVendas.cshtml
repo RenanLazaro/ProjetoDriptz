@@ -1,0 +1,86 @@
+﻿@using ProjetoDriptz.Models.ViewModels.Relatorio
+@model RelatorioVendasMesVm
+
+<style>
+    .relatorio-container {
+        max-width: 500px;
+        margin: 60px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        font-family: Arial, sans-serif;
+    }
+
+        .relatorio-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+    .relatorio-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+        .relatorio-form label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .relatorio-form select,
+        .relatorio-form input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+            .relatorio-form select:focus,
+            .relatorio-form input:focus {
+                outline: none;
+                border-color: #4f46e5;
+                box-shadow: 0 0 0 2px rgba(79,70,229,0.15);
+            }
+
+        .relatorio-form button {
+            margin-top: 10px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #4f46e5;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+            .relatorio-form button:hover {
+                background: #3730a3;
+            }
+</style>
+
+<div class="relatorio-container">
+    <h2>Relatório de Vendas por Mês</h2>
+
+    <form method="get" asp-action="GerarRelatorio" class="relatorio-form">
+        @{
+            var cultura = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+        }
+
+        <label for="Mes">Mês</label>
+        <select asp-for="Mes" id="Mes">
+            @for (int i = 1; i <= 12; i++)
+            {
+                <option value="@i">@cultura.DateTimeFormat.GetMonthName(i)</option>
+            }
+        </select>
+
+        <label for="Ano">Ano</label>
+        <input type="number" asp-for="Ano" id="Ano" value="@DateTime.Now.Year" />
+
+        <button type="submit">Gerar PDF</button>
+    </form>
+</div>

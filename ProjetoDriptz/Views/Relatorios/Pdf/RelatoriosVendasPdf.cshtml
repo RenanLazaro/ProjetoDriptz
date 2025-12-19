@@ -1,0 +1,111 @@
+﻿@using ProjetoDriptz.Models.ViewModels.Relatorio
+@model RelatorioVendasMesVm
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: Arial;
+            font-size: 12px;
+        }
+
+        .cabecalho {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .titulo {
+            float: left;
+            width: 70%;
+        }
+
+        .logo {
+            float: right;
+            width: 30%;
+            text-align: right;
+        }
+
+            .logo img {
+                max-height: 80px;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+
+        td {
+            text-align: center;
+        }
+
+
+    
+    </style>
+</head>
+<body>
+
+    <!-- CABEÇALHO -->
+    <div class="cabecalho">
+        <div class="titulo">
+            <h2>Relatório de Vendas</h2>
+            <p>
+                Mês:
+                @(System.Globalization.CultureInfo
+                                .GetCultureInfo("pt-BR")
+                                .DateTimeFormat.GetMonthName(Model.Mes))
+                / @Model.Ano
+
+            </p>
+        </div>
+
+        <div class="logo">
+            <img src="@Url.Content("~/img/driptz-logo.png")" alt="Logo" />
+        </div>
+    </div>
+
+    <!-- TABELA -->
+    <table>
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Data</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário</th>
+                <th>Valor Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var venda in Model.Vendas)
+            {
+                foreach (var item in venda.VendaItens)
+                {
+                    <tr>
+                        <td>@item.Produto.NomeProduto</td>
+                        <td>@venda.DataVenda.ToString("dd/MM/yyyy")</td>
+                        <td>@item.Quantidade</td>
+                        <td>R$ @item.PrecoUnitario</td>
+                        <td>R$ @(item.Quantidade * item.PrecoUnitario)</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+</body>
+</html>
