@@ -56,7 +56,7 @@ var app = builder.Build();
 //     db.Database.Migrate();
 // }
 
-
+app.UseStaticFiles();
 // PIPELINE
 if (!app.Environment.IsDevelopment())
 {
