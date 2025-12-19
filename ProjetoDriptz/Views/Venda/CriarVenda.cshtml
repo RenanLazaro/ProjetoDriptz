@@ -115,7 +115,8 @@
         </div>
 
 <input type="hidden" asp-for="ValorTotal" id="inputValorTotal" />
-<input type="hidden" asp-for="DescontoPercentual" id="inputDescontoPercentual" value="0" />
+<input type="hidden" name="DescontoGeral" id="inputDescontoPercentual" value="0" />
+
 
         <div class="form-check mb-2">
             <input asp-for="PossuiMaisDeUmaFormaPagamento"
@@ -195,13 +196,9 @@
                 <div class="resumo">
                     <div>Subtotal: <span id="subtotal">R$ 0,00</span></div>
 
-                    <div class="desconto">
-                        <span>%</span>
-                        <input type="number"
-                               id="desconto"
-                               min="0"
-                               max="100"
-                               value="0" />
+                    <div class="desconto-global">
+                        <label>Desconto Geral (%)</label>
+                        <input type="number" id="descontoGlobal" value="0" min="0" max="100" />
                     </div>
 
                     <div class="desconto-valor">
@@ -236,108 +233,109 @@
 </div>
 
 <script>
-    let carrinho = [];
+let descontoGlobal = 0;
+let carrinho = [];
 
-       function adicionarItem(produtoId, estoqueId, tamanho, nome, preco) {
-        // ✅ Busca pelo estoqueId (único por produto + tamanho)
-        const item = carrinho.find(i => i.estoqueId === estoqueId);
-
-        if (item) {
-            item.quantidade++;
-        } else {
-            carrinho.push({
-                produtoId: produtoId,
-                estoqueId: estoqueId,
-                tamanho: tamanho,
-                nome: nome,
-                preco: preco,
-                quantidade: 1
-            });
-        }
-
-        renderCarrinho();
-    }
-
-    function renderCarrinho() {
-        const lista = document.getElementById("listaCarrinho");
-        const itensVenda = document.getElementById("itensVenda");
-
-        lista.innerHTML = "";
-        itensVenda.innerHTML = "";
-
-        let subtotal = 0;
-
-        carrinho.forEach((item, index) => {
-            const totalItem = item.preco * item.quantidade;
-            subtotal += totalItem;
-
-            // ✅ Adiciona nome do tamanho ao exibir
-            const tamanhoNome = getTamanhoNome(item.tamanho);
-
-            lista.innerHTML += `
-                <div class="carrinho-item">
-                    <div>
-                        <strong>${item.nome}</strong> <span class="badge bg-secondary">${tamanhoNome}</span><br/>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="alterarQuantidade(${item.estoqueId}, -1)">-</button>
-                        <span class="mx-2">${item.quantidade}</span>
-                        <button type="button" class="btn btn-sm btn-outline-success" onclick="alterarQuantidade(${item.estoqueId}, 1)">+</button>
-                    </div>
-                    <div>R$ ${totalItem.toFixed(2)}</div>
-                </div>
-            `;
-
-            // ✅ Campos corretos para o backend
-            itensVenda.innerHTML += `
-                <input type="hidden" name="Itens[${index}].ProdutoId" value="${item.produtoId}" />
-                <input type="hidden" name="Itens[${index}].EstoqueId" value="${item.estoqueId}" />
-                <input type="hidden" name="Itens[${index}].Quantidade" value="${item.quantidade}" />
-                <input type="hidden" name="Itens[${index}].PrecoUnitario" value="${item.preco}" />
-                <input type="hidden" name="Itens[${index}].Tamanho" value="${item.tamanho}" />
-            `;
+function adicionarItem(produtoId, estoqueId, tamanho, nome, preco) {
+    const item = carrinho.find(i => i.estoqueId === estoqueId);
+    if (item) {
+        item.quantidade++;
+    } else {
+        carrinho.push({
+            produtoId,
+            estoqueId,
+            tamanho,
+            nome,
+            preco,
+            quantidade: 1,
+            desconto: 0 // desconto individual
         });
-
-        aplicarDesconto(subtotal);
     }
+    renderCarrinho();
+}
 
-    function alterarQuantidade(estoqueId, delta) {
-        const item = carrinho.find(i => i.estoqueId === estoqueId);
-        if (!item) return;
+function renderCarrinho() {
+    const lista = document.getElementById("listaCarrinho");
+    const itensVenda = document.getElementById("itensVenda");
 
-        item.quantidade += delta;
+    lista.innerHTML = "";
+    itensVenda.innerHTML = "";
 
-        if (item.quantidade <= 0) {
-            carrinho = carrinho.filter(i => i.estoqueId !== estoqueId);
-        }
+    carrinho.forEach((item, index) => {
+        const totalItem = item.preco * item.quantidade * (1 - item.desconto / 100);
 
-        renderCarrinho();
-    }
+        lista.innerHTML += `
+            <div class="carrinho-item">
+                <div>
+                    <strong>${item.nome}</strong> <span class="badge bg-secondary">${getTamanhoNome(item.tamanho)}</span><br/>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="alterarQuantidade(${item.estoqueId}, -1)">-</button>
+                    <span class="mx-2">${item.quantidade}</span>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="alterarQuantidade(${item.estoqueId}, 1)">+</button>
+                    <input type="number" min="0" max="100" value="${item.desconto}" style="width:60px;margin-left:10px"
+                           onchange="atualizarDescontoItem(${item.estoqueId}, this.value)" />%
+                </div>
+                <div>R$ ${totalItem.toFixed(2)}</div>
+            </div>
+        `;
 
-    function getTamanhoNome(tamanhoEnum) {
-        const tamanhos = {
-            0: 'PP',
-            1: 'P',
-            2: 'M',
-            3: 'G',
-            4: 'GG',
-            5: 'XG'
-        };
-        return tamanhos[tamanhoEnum] || tamanhoEnum;
-    }
-
-    document.getElementById("desconto").addEventListener("input", () => {
-        const subtotal = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
-        aplicarDesconto(subtotal);
+        // hidden inputs para backend
+        itensVenda.innerHTML += `
+            <input type="hidden" name="Itens[${index}].ProdutoId" value="${item.produtoId}" />
+            <input type="hidden" name="Itens[${index}].EstoqueId" value="${item.estoqueId}" />
+            <input type="hidden" name="Itens[${index}].Quantidade" value="${item.quantidade}" />
+            <input type="hidden" name="Itens[${index}].PrecoUnitario" value="${item.preco}" />
+            <input type="hidden" name="Itens[${index}].Tamanho" value="${item.tamanho}" />
+            <input type="hidden" name="Itens[${index}].DescontoPercentual" value="${item.desconto}" />
+        `;
     });
 
-  function aplicarDesconto(subtotal) {
-    const desconto = parseFloat(document.getElementById("desconto").value) || 0;
-    const valorDesc = subtotal * (desconto / 100);
-    const total = subtotal - valorDesc;
+    aplicarDesconto();
+}
+
+function atualizarDescontoItem(estoqueId, valor) {
+    const item = carrinho.find(i => i.estoqueId === estoqueId);
+    if (!item) return;
+    item.desconto = parseInt(valor) || 0;
+    renderCarrinho();
+}
+
+function alterarQuantidade(estoqueId, delta) {
+    const item = carrinho.find(i => i.estoqueId === estoqueId);
+    if (!item) return;
+    item.quantidade += delta;
+    if (item.quantidade <= 0) {
+        carrinho = carrinho.filter(i => i.estoqueId !== estoqueId);
+    }
+    renderCarrinho();
+}
+
+function getTamanhoNome(tamanhoEnum) {
+    const tamanhos = {0:'PP',1:'P',2:'M',3:'G',4:'GG',5:'XG'};
+    return tamanhos[tamanhoEnum] || tamanhoEnum;
+}
+
+// desconto global
+document.getElementById("descontoGlobal").addEventListener("input", () => {
+    descontoGlobal = parseFloat(document.getElementById("descontoGlobal").value) || 0;
+    renderCarrinho();
+});
+
+function aplicarDesconto() {
+    // subtotal sem desconto
+    let subtotal = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade, 0);
+    // total com desconto por item
+    let totalItens = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade * (1 - i.desconto / 100), 0);
+    // aplica desconto global
+    let valorDescontoGlobal = totalItens * (descontoGlobal / 100);
+    let totalFinal = totalItens - valorDescontoGlobal;
+
+    // atualiza HTML
     document.getElementById("subtotal").innerText = `R$ ${subtotal.toFixed(2)}`;
-    document.getElementById("descontoPercentual").innerText = desconto;  // Already there, but fixed selector
-    document.getElementById("valorDesconto").innerText = `R$ ${valorDesc.toFixed(2)}`;  // Fixed sign
-    document.getElementById("total").innerText = `R$ ${total.toFixed(2)}`;
-    document.getElementById("inputValorTotal").value = total.toFixed(2);
-    document.getElementById("inputDescontoPercentual").value = desconto;  // NEW: Send discount to backend
+    document.getElementById("valorDesconto").innerText = `R$ ${(subtotal - totalItens + valorDescontoGlobal).toFixed(2)}`;
+    document.getElementById("total").innerText = `R$ ${totalFinal.toFixed(2)}`;
+
+    // envia para backend
+    document.getElementById("inputValorTotal").value = totalFinal.toFixed(2);
+    document.getElementById("inputDescontoPercentual").value = descontoGlobal; // desconto geral
 }
 </script>

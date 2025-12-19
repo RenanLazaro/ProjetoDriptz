@@ -30,9 +30,9 @@
                 </div>
                 <div class="col-md-6">
                     <p><strong>Valor Total:</strong> <span class="text-danger fw-bold fs-5">R$ @Model.ValorTotal.ToString("F2")</span></p>
-                    @if (Model.DescontoPercentual > 0)
+                    @if (Model.DescontoGeral > 0)
                     {
-                        <p><strong>Desconto:</strong> @Model.DescontoPercentual%</p>
+                        <p><strong>Desconto:</strong> @Model.DescontoGeral%</p>
                     }
                 </div>
             </div>

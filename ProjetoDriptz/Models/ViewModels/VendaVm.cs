@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ProjetoDriptz.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,7 +14,7 @@ namespace ProjetoDriptz.Models.ViewModels
         public int? FormaDePagamentoAdicional { get; set; }
         public bool PossuiMaisDeUmaFormaPagamento { get; set; }
 
-        public decimal DescontoPercentual { get; set; }
+        public int? DescontoGeral { get; set; }
         public decimal ValorAdicional { get; set; }
 
         public decimal Subtotal { get; set; }
@@ -43,14 +44,12 @@ namespace ProjetoDriptz.Models.ViewModels
     {
         public int ProdutoId { get; set; }
         public int EstoqueId { get; set; }
-
         public string NomeProduto { get; set; }
-        //public string Descricao { get; set; }
-
         public TamanhoProduto Tamanho { get; set; }
-
         public int Quantidade { get; set; }
         public decimal PrecoUnitario { get; set; }
+        public int? DescontoPercentual { get; set; }
+
 
         public decimal SubTotal => Quantidade * PrecoUnitario;
 

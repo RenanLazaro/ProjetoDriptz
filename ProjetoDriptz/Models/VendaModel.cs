@@ -23,6 +23,8 @@ namespace ProjetoDriptz.Models
         [Required(ErrorMessage = "Campo Obrigatório")]
         public decimal ValorTotal { get; set; }
 
+        public int? DescontoGeral { get; set; }
+
         public virtual List<VendaItemModel> VendaItens { get; set; }
 
     }

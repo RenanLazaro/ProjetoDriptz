@@ -84,7 +84,7 @@ namespace ProjetoDriptz.Controllers
                     PossuiMaisDeUmaFormaPagamento = venda.PossuiMaisDeUmaFormaPagamento,
                     ValorAdicional = venda.ValorAdicional,
                     ValorTotal = venda.ValorTotal,
-                  //  DescontoPercentual = venda.DescontoPercentual, // Adicione se existir
+                    DescontoGeral = venda.DescontoGeral, // Adicione se existir
                     Itens = venda.VendaItens.Select(i => new VendaItemVm
                     {
                         ProdutoId = i.ProdutoId,
@@ -92,7 +92,8 @@ namespace ProjetoDriptz.Controllers
                         Quantidade = i.Quantidade,
                         PrecoUnitario = i.PrecoUnitario,
                         Tamanho = i.Tamanho,
-                        NomeProduto = i.Produto?.NomeProduto // Adicione para exibir na view
+                        NomeProduto = i.Produto?.NomeProduto,
+                        DescontoPercentual = i.DescontoPercentual// Adicione para exibir na view
                     }).ToList()
                 };
 
@@ -169,23 +170,23 @@ namespace ProjetoDriptz.Controllers
         }
 
 
+        [HttpGet]
         public IActionResult Criar()
         {
             try
             {
-                // ✅ Busca todos os estoques com quantidade > 0 e já inclui o Produto relacionado
+                // Busca todos os estoques com quantidade > 0 e inclui o Produto relacionado
                 var estoquesDisponiveis = _estoqueRepositorio.BuscarTodos()
                     .Where(e => e.Quantidade > 0)
                     .ToList();
 
-                // ✅ Verifica se há estoques disponíveis
                 if (!estoquesDisponiveis.Any())
                 {
                     TempData["MensagemAlerta"] = "Não há produtos com estoque disponível no momento.";
                     return RedirectToAction("Index", "Estoque");
                 }
 
-                // ✅ Cria uma estrutura otimizada para o JavaScript
+                // Cria estrutura simplificada para JS
                 var estoquesParaView = estoquesDisponiveis.Select(e => new
                 {
                     EstoqueId = e.Id,
@@ -195,15 +196,17 @@ namespace ProjetoDriptz.Controllers
                     TamanhoNome = ((TamanhoProduto)e.Tamanho).ToString(),
                     Preco = e.Produto?.Preco ?? 0,
                     QuantidadeDisponivel = e.Quantidade,
-                    ImagemUrl = e.Produto?.Imagem // Se tiver campo de imagem
+                    ImagemUrl = e.Produto?.Imagem
                 }).ToList();
 
                 ViewBag.Estoques = estoquesParaView;
 
+                // Inicializa o ViewModel para evitar null
                 var vendaVm = new VendaVm
                 {
                     DataVenda = DateTime.Now,
-                    Itens = new List<VendaItemVm>()
+                    Itens = new List<VendaItemVm>(),  // essencial!
+                    DescontoGeral = 0
                 };
 
                 return View("CriarVenda", vendaVm);
@@ -217,11 +220,13 @@ namespace ProjetoDriptz.Controllers
 
 
 
+
         [HttpPost]
         public IActionResult Criar(VendaVm vendaVm)
         {
             try
             {
+                // Remove validações desnecessárias para itens
                 if (vendaVm.Itens != null)
                 {
                     for (int i = 0; i < vendaVm.Itens.Count; i++)
@@ -231,44 +236,49 @@ namespace ProjetoDriptz.Controllers
                         vendaVm.Itens[i].EstoqueId = 0; // ou null se for nullable
                     }
                 }
+
+                // Valida ModelState
                 if (!ModelState.IsValid)
                 {
                     CarregarProdutos();
                     return View("CriarVenda", vendaVm);
                 }
+
                 if (vendaVm.Itens == null || !vendaVm.Itens.Any())
                 {
                     CarregarProdutos();
                     ModelState.AddModelError("", "Nenhum item foi adicionado à venda.");
                     return View("CriarVenda", vendaVm);
                 }
-                // ✅ BUSCA E VALIDA CADA ESTOQUE INDIVIDUALMENTE
+
+                // 1️⃣ Valida estoque de cada item
                 var estoquesPorItem = new Dictionary<string, EstoqueModel>();
                 foreach (var itemVm in vendaVm.Itens)
                 {
                     var chave = $"{itemVm.ProdutoId}_{(int)itemVm.Tamanho}";
-                    // Se já validamos esta combinação, pula
                     if (estoquesPorItem.ContainsKey(chave))
                         continue;
-                    // Busca o estoque diretamente
-                    var estoque = _estoqueRepositorio
-                        .BuscarPorProdutoETamanho(itemVm.ProdutoId, (int)itemVm.Tamanho);
+
+                    var estoque = _estoqueRepositorio.BuscarPorProdutoETamanho(itemVm.ProdutoId, (int)itemVm.Tamanho);
                     if (estoque == null)
                     {
                         var produto = _produtoRepositorio.ListarPorIId(itemVm.ProdutoId);
                         throw new Exception($"Estoque não encontrado para: {produto?.NomeProduto ?? "Produto"} - Tamanho: {itemVm.Tamanho}");
                     }
-                    // Calcula quantidade total necessária desta combinação
+
                     var quantidadeTotal = vendaVm.Itens
                         .Where(i => i.ProdutoId == itemVm.ProdutoId && i.Tamanho == itemVm.Tamanho)
                         .Sum(i => i.Quantidade);
+
                     if (estoque.Quantidade < quantidadeTotal)
                     {
                         throw new Exception($"Estoque insuficiente para {estoque.Produto?.NomeProduto} (Tamanho: {itemVm.Tamanho}). Disponível: {estoque.Quantidade}, Solicitado: {quantidadeTotal}");
                     }
+
                     estoquesPorItem[chave] = estoque;
                 }
-                // 1️⃣ Cria a venda (sem ValorTotal inicial, pois será calculado)
+
+                // 2️⃣ Cria a venda (sem ValorTotal inicial)
                 var venda = new VendaModel
                 {
                     DataVenda = DateTime.Now,
@@ -277,15 +287,24 @@ namespace ProjetoDriptz.Controllers
                     PossuiMaisDeUmaFormaPagamento = vendaVm.PossuiMaisDeUmaFormaPagamento,
                     ValorAdicional = vendaVm.ValorAdicional
                 };
+
                 _vendaRepositorio.Adicionar(venda);
+
                 decimal subtotal = 0;
-                // 2️⃣ Processa os itens
+
+                // 3️⃣ Processa os itens
                 foreach (var itemVm in vendaVm.Itens)
                 {
                     var chave = $"{itemVm.ProdutoId}_{(int)itemVm.Tamanho}";
                     var estoque = estoquesPorItem[chave];
-                    var subtotalItem = itemVm.Quantidade * itemVm.PrecoUnitario;
+
+                    // Calcula subtotal do item já aplicando desconto individual
+                    decimal subtotalItem = itemVm.Quantidade * itemVm.PrecoUnitario;
+                    decimal valorDescontoItem = subtotalItem * ((decimal)(itemVm.DescontoPercentual ?? 0) / 100m);
+                    subtotalItem -= valorDescontoItem;
+
                     subtotal += subtotalItem;
+
                     var vendaItem = new VendaItemModel
                     {
                         VendaId = venda.Id,
@@ -294,23 +313,32 @@ namespace ProjetoDriptz.Controllers
                         Tamanho = itemVm.Tamanho,
                         Quantidade = itemVm.Quantidade,
                         PrecoUnitario = itemVm.PrecoUnitario,
-                        SubTotal = subtotalItem
+                        SubTotal = subtotalItem,
+                        DescontoPercentual = itemVm.DescontoPercentual ?? 0 // ✅ desconto individual
                     };
+
                     _vendaItemRepositorio.Adicionar(vendaItem);
+
+                    // Atualiza estoque
                     estoque.Quantidade -= itemVm.Quantidade;
                     _estoqueRepositorio.Editar(estoque);
                 }
-                // 3️⃣ Calcula o total com desconto (assumindo DescontoPercentual em VendaVm)
-                decimal valorDesconto = subtotal * (vendaVm.DescontoPercentual / 100m);
-                decimal valorTotal = subtotal - valorDesconto;
-                // Se houver pagamento adicional, valide que não excede o total (opcional, mas recomendado)
+
+                // 4️⃣ Calcula total da venda aplicando desconto geral
+                decimal valorDescontoGeral = subtotal * ((decimal)(vendaVm.DescontoGeral ?? 0) / 100m);
+                decimal valorTotal = subtotal - valorDescontoGeral;
+
+                venda.ValorTotal = valorTotal;
+                venda.DescontoGeral = vendaVm.DescontoGeral ?? 0; // ✅ desconto global
+
+                // Valida pagamento adicional
                 if (vendaVm.PossuiMaisDeUmaFormaPagamento && (vendaVm.ValorAdicional > valorTotal || vendaVm.ValorAdicional < 0))
                 {
                     throw new Exception("O valor adicional deve ser entre 0 e o total da venda.");
                 }
-                // Note: Não adicionamos ValorAdicional ao total, pois ele é parte do pagamento, não do valor da venda
-                venda.ValorTotal = valorTotal;
+
                 _vendaRepositorio.Editar(venda);
+
                 TempData["MensagemSucesso"] = "Venda realizada com sucesso!";
                 return RedirectToAction("Index", "Estoque");
             }
@@ -329,7 +357,7 @@ namespace ProjetoDriptz.Controllers
         {
             try
             {
-                // Remove erros de validação do NomeProduto (campo não obrigatório para salvar)
+                // Remove erros de validação do NomeProduto (campo não obrigatório)
                 for (int i = 0; i < vendaVm.Itens?.Count; i++)
                 {
                     ModelState.Remove($"Itens[{i}].NomeProduto");
@@ -341,7 +369,6 @@ namespace ProjetoDriptz.Controllers
                     return View("EditarVenda", vendaVm);
                 }
 
-                // Validações de negócio
                 if (vendaVm.Itens == null || !vendaVm.Itens.Any())
                 {
                     TempData["MensagemErro"] = "A venda deve conter pelo menos um item.";
@@ -349,7 +376,6 @@ namespace ProjetoDriptz.Controllers
                     return View("EditarVenda", vendaVm);
                 }
 
-                // Buscar a venda existente
                 var vendaExistente = _vendaRepositorio.BuscarTodosComItens()
                     .FirstOrDefault(v => v.Id == vendaVm.Id);
 
@@ -359,24 +385,21 @@ namespace ProjetoDriptz.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // ============ DEVOLVER ESTOQUE DOS ITENS ANTIGOS E REMOVÊ-LOS ============
+                // ===== Devolver estoque dos itens antigos e removê-los =====
                 var itensAntigos = vendaExistente.VendaItens.ToList();
-
                 foreach (var itemAntigo in itensAntigos)
                 {
                     var estoque = _estoqueRepositorio.ListarPorIId(itemAntigo.EstoqueId);
                     if (estoque != null)
                     {
-                        // Devolve a quantidade ao estoque
                         estoque.Quantidade += itemAntigo.Quantidade;
                         _estoqueRepositorio.Editar(estoque);
                     }
 
-                    // Remove o item do banco usando o repositório
                     _vendaItemRepositorio.Excluir(itemAntigo.Id);
                 }
 
-                // ============ VALIDAR DISPONIBILIDADE DE ESTOQUE ============
+                // ===== Validar disponibilidade de estoque =====
                 foreach (var itemVm in vendaVm.Itens)
                 {
                     var estoque = _estoqueRepositorio.ListarPorIId(itemVm.EstoqueId);
@@ -384,8 +407,6 @@ namespace ProjetoDriptz.Controllers
                     if (estoque == null)
                     {
                         TempData["MensagemErro"] = "Estoque não encontrado para o item.";
-
-                        // Reverter devolução de estoque
                         foreach (var itemAntigo in itensAntigos)
                         {
                             var estoqueReverter = _estoqueRepositorio.ListarPorIId(itemAntigo.EstoqueId);
@@ -395,7 +416,6 @@ namespace ProjetoDriptz.Controllers
                                 _estoqueRepositorio.Editar(estoqueReverter);
                             }
                         }
-
                         CarregarEstoques();
                         return View("EditarVenda", vendaVm);
                     }
@@ -403,8 +423,6 @@ namespace ProjetoDriptz.Controllers
                     if (estoque.Quantidade < itemVm.Quantidade)
                     {
                         TempData["MensagemErro"] = $"Quantidade insuficiente em estoque para o produto '{estoque.Produto?.NomeProduto}'. Disponível: {estoque.Quantidade}";
-
-                        // Reverter devolução de estoque
                         foreach (var itemAntigo in itensAntigos)
                         {
                             var estoqueReverter = _estoqueRepositorio.ListarPorIId(itemAntigo.EstoqueId);
@@ -414,13 +432,12 @@ namespace ProjetoDriptz.Controllers
                                 _estoqueRepositorio.Editar(estoqueReverter);
                             }
                         }
-
                         CarregarEstoques();
                         return View("EditarVenda", vendaVm);
                     }
                 }
 
-                // ============ BAIXAR ESTOQUE E CRIAR NOVOS ITENS ============
+                // ===== Baixar estoque e criar novos itens com desconto =====
                 foreach (var itemVm in vendaVm.Itens)
                 {
                     var estoque = _estoqueRepositorio.ListarPorIId(itemVm.EstoqueId);
@@ -429,7 +446,7 @@ namespace ProjetoDriptz.Controllers
                     estoque.Quantidade -= itemVm.Quantidade;
                     _estoqueRepositorio.Editar(estoque);
 
-                    // Cria novo item
+                    // Cria novo item com DescontoPercentual
                     var novoItem = new VendaItemModel
                     {
                         VendaId = vendaExistente.Id,
@@ -437,20 +454,21 @@ namespace ProjetoDriptz.Controllers
                         EstoqueId = itemVm.EstoqueId,
                         Quantidade = itemVm.Quantidade,
                         PrecoUnitario = itemVm.PrecoUnitario,
-                        Tamanho = itemVm.Tamanho
+                        Tamanho = itemVm.Tamanho,
+                        DescontoPercentual = itemVm.DescontoPercentual // ✅ Salva desconto individual
                     };
 
                     _vendaItemRepositorio.Adicionar(novoItem);
                 }
 
-                // ============ ATUALIZAR DADOS DA VENDA ============
+                // ===== Atualizar dados da venda =====
                 vendaExistente.DataVenda = DateTime.Now;
                 vendaExistente.FormaDePagamento = vendaVm.FormaDePagamento;
                 vendaExistente.PossuiMaisDeUmaFormaPagamento = vendaVm.PossuiMaisDeUmaFormaPagamento;
                 vendaExistente.FormaDePagamentoAdicional = vendaVm.FormaDePagamentoAdicional;
                 vendaExistente.ValorAdicional = vendaVm.ValorAdicional;
                 vendaExistente.ValorTotal = vendaVm.ValorTotal;
-               // vendaExistente.DescontoPercentual = vendaVm.DescontoPercentual;
+                vendaExistente.DescontoGeral = vendaVm.DescontoGeral; // ✅ Salva desconto global
 
                 _vendaRepositorio.Editar(vendaExistente);
 
@@ -464,6 +482,7 @@ namespace ProjetoDriptz.Controllers
                 return View("EditarVenda", vendaVm);
             }
         }
+
 
         [HttpPost]
         public IActionResult Apagar(int id)

@@ -1,74 +1,89 @@
 ﻿@using ProjetoDriptz.Enums
 @model UsuarioModel
 
+<a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">
+    <i class="bi bi-shop me-2"></i>Olá, @Model.Nome
+</a>
 
-<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Olá, @Model.Nome</a>
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-        aria-expanded="false" aria-label="Toggle navigation">
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+        data-bs-target=".navbar-collapse" aria-expanded="false">
     <span class="navbar-toggler-icon"></span>
 </button>
+
 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-    <ul class="navbar-nav flex-grow-1">
-        
+    <ul class="navbar-nav flex-grow-1 gap-1">
 
+        <!-- Cadastros -->
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Cadastros Básicos
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                <i class="bi bi-box-seam me-1"></i> Cadastros
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <ul class="dropdown-menu shadow-sm">
                 <li>
-                    <a class="dropdown-item" asp-area="" asp-controller="Produto" asp-action="Index">Cadastro de Produtos</a>
+                    <a class="dropdown-item" asp-controller="Produto" asp-action="Index">
+                        <i class="bi bi-tags me-2"></i>Produtos
+                    </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" asp-area="" asp-controller="Estoque" asp-action="Index">Estoque de Produtos</a>
+                    <a class="dropdown-item" asp-controller="Estoque" asp-action="Index">
+                        <i class="bi bi-archive me-2"></i>Estoque
+                    </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" asp-area="" asp-controller="Venda" asp-action="Criar">Realizar Venda</a>
+                    <a class="dropdown-item" asp-controller="Venda" asp-action="Criar">
+                        <i class="bi bi-cart-plus me-2"></i>Realizar Venda
+                    </a>
                 </li>
             </ul>
         </li>
 
-
+        <!-- Dados -->
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-               Dados
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                <i class="bi bi-bar-chart me-1"></i> Dados
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Venda" asp-action="Index">Vendas Realizadas</a>
+            <ul class="dropdown-menu shadow-sm">
+                <li>
+                    <a class="dropdown-item" asp-controller="Venda" asp-action="Index">
+                        <i class="bi bi-receipt me-2"></i>Vendas Realizadas
+                    </a>
                 </li>
             </ul>
         </li>
 
+        <!-- Relatórios -->
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Relatórios
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                <i class="bi bi-file-earmark-text me-1"></i> Relatórios
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Relatorios" asp-action="Index">Relatório de Vendas no mês</a>
+            <ul class="dropdown-menu shadow-sm">
+                <li>
+                    <a class="dropdown-item" asp-controller="Relatorios" asp-action="Index">
+                        <i class="bi bi-calendar-month me-2"></i>Vendas do Mês
+                    </a>
                 </li>
             </ul>
         </li>
- 
-
 
         @if (Model.Perfil == (int)PerfilUsuario.Administrador)
         {
             <li class="nav-item">
-                <a class="nav-link text-dark" asp-area="" asp-controller="Usuario" asp-action="Index">Usuários</a>
+                <a class="nav-link" asp-controller="Usuario" asp-action="Index">
+                    <i class="bi bi-people me-1"></i> Usuários
+                </a>
             </li>
-
         }
 
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="" asp-controller="AlterarSenha" asp-action="Index">Alterar Senha</a>
+            <a class="nav-link" asp-controller="AlterarSenha" asp-action="Index">
+                <i class="bi bi-key me-1"></i> Alterar Senha
+            </a>
         </li>
-        
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Sair">Sair</a>
-        </li>
-       
 
+        <li class="nav-item">
+            <a class="nav-link text-danger" asp-controller="Login" asp-action="Sair">
+                <i class="bi bi-box-arrow-right me-1"></i> Sair
+            </a>
+        </li>
     </ul>
 </div>

@@ -31,6 +31,9 @@ namespace ProjetoDriptz.Models
         public decimal SubTotal { get; set; }
 
 
+        public int? DescontoPercentual { get; set; }
+
+
         public ProdutoModel? Produto { get; set; }
         public EstoqueModel? Estoque { get; set; }
         public VendaModel? Venda { get; set; }
