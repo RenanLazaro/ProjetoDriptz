@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoDriptz.Models.ViewModels.Relatorio;
+using ProjetoDriptz.Reports;
 using ProjetoDriptz.Repositorio;
+using QuestPDF.Fluent;
 using Rotativa.AspNetCore;
 
 public class RelatoriosController : Controller
@@ -53,37 +55,27 @@ public class RelatoriosController : Controller
     [HttpGet]
     public IActionResult GerarRelatorio(int mes, int ano)
     {
-        try
-        {
-            var vendas = _vendaRepositorio
-                .BuscarTodosComItens()
-                .Where(v => v.DataVenda.Month == mes && v.DataVenda.Year == ano)
-                .OrderBy(v => v.DataVenda)
-                .ToList();
+        var vendas = _vendaRepositorio
+            .BuscarTodosComItens()
+            .Where(v => v.DataVenda.Month == mes && v.DataVenda.Year == ano)
+            .OrderBy(v => v.DataVenda)
+            .ToList();
 
-            var vm = new RelatorioVendasMesVm
-            {
-                Mes = mes,
-                Ano = ano,
-                Vendas = vendas
-            };
-
-            return new ViewAsPdf(
-                "~/Views/Relatorios/Pdf/RelatoriosVendasPdf.cshtml",
-                vm)
-            {
-                FileName = $"Relatorio_Vendas_{mes}_{ano}.pdf",
-                PageSize = Rotativa.AspNetCore.Options.Size.A4
-            };
-        }
-        catch (Exception ex)
+        var vm = new RelatorioVendasMesVm
         {
-            return Content(
-                "ERRO AO GERAR PDF:\n\n" +
-                ex.Message + "\n\n" +
-                ex.InnerException?.Message
-            );
-        }
+            Mes = mes,
+            Ano = ano,
+            Vendas = vendas
+        };
+
+        var documento = new RelatorioVendasMesPdf(vm);
+        var pdfBytes = documento.GeneratePdf();
+
+        return File(
+            pdfBytes,
+            "application/pdf",
+            $"Relatorio_Vendas_{mes:D2}_{ano}.pdf"
+        );
     }
 
 }

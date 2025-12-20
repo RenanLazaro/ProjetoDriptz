@@ -5,8 +5,12 @@ using ProjetoDriptz.Data;
 using ProjetoDriptz.Helper;
 using ProjetoDriptz.Repositorio;
 using Rotativa.AspNetCore;
+using QuestPDF.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 // BANCO
 builder.Services.AddDbContext<BancoContext>(options =>
