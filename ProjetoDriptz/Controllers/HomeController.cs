@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjetoDriptz.Filters;
 using ProjetoDriptz.Models;
+using ProjetoDriptz.Repositorio;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace ProjetoDriptz.Controllers
 {
@@ -11,22 +11,30 @@ namespace ProjetoDriptz.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IUsuarioRepositorio _usuarioRepositorio;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger,IUsuarioRepositorio usuarioRepositorio)
         {
             _logger = logger;
+            _usuarioRepositorio = usuarioRepositorio;
         }
 
         public IActionResult Index()
         {
             HomeModel home = new HomeModel();
 
-            home.Nome = "Renan";
-            home.Email = "renanlazaro@gmail.com";
-           
+            // Pega o usuário da sessão
+            var sessaoUsuario = HttpContext.Session.GetString("sessaoUsuarioLogado");
+
+            if (!string.IsNullOrEmpty(sessaoUsuario))
+            {
+                var usuario = JsonSerializer.Deserialize<UsuarioModel>(sessaoUsuario);
+                home.Nome = usuario.Nome;
+                home.Email = usuario.Email;
+            }
+
             return View(home);
         }
-
         public IActionResult Privacy()
         {
             return View();
