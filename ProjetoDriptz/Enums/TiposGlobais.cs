@@ -10,12 +10,23 @@ namespace ProjetoDriptz.Enums
         [Display(Name = "Boné")] Boné = 3
     }
 
-    public enum TamanhoProduto
+/*    public enum TamanhoProduto
     {
         [Display(Name = "P")] P = 0,
         [Display(Name = "M")] M = 1,
         [Display(Name = "G")] G = 2,
         [Display(Name = "GG")] GG = 3
+    }*/
+
+    public enum TamanhoProduto
+    {
+        [Display(Name = "P")] P = 0,
+        [Display(Name = "M")] M = 1,
+        [Display(Name = "G")] G = 2,
+        [Display(Name = "GG")] GG = 3,
+        [Display(Name = "XG")] XG = 4,
+        [Display(Name = "EG")] EG = 5,
+        [Display(Name = "EXG")] EXG = 6
     }
 
     public enum PerfilUsuario
