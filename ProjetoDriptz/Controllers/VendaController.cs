@@ -33,31 +33,30 @@ namespace ProjetoDriptz.Controllers
             var estoques = _estoqueRepositorio.BuscarTodos()
                 .ToDictionary(e => e.Id);
 
-            var vendasVm = vendas.SelectMany(v => v.VendaItens.Select(item =>
+            var vendasVm = vendas.Select(v => new VendaVm
             {
-                var produto = produtos[item.ProdutoId];
-                var estoque = estoques[item.EstoqueId];
+                Id = v.Id,
+                DataVenda = v.DataVenda,
+                FormaDePagamento = v.FormaDePagamento,
+                ValorTotal = v.ValorTotal,
 
-                return new VendaVm
+                Itens = v.VendaItens.Select(item =>
                 {
-                    Id = v.Id,
-                    DataVenda = v.DataVenda,
-                    FormaDePagamento = v.FormaDePagamento,
-                    PossuiMaisDeUmaFormaPagamento = v.PossuiMaisDeUmaFormaPagamento,
+                    var produto = produtos[item.ProdutoId];
+                    var estoque = estoques[item.EstoqueId];
 
-                    NomeProduto = produto.NomeProduto,
-                    ImagemProduto = produto.Imagem,
-                    ValorProduto = item.Venda.ValorTotal,
-                    Quantidade = estoque.Quantidade
-                };
-            })).ToList();
+                    return new VendaItemVm
+                    {
+                        NomeProduto = produto.NomeProduto,
+                        ImagemProduto = produto.Imagem,
+                        Quantidade = item.Quantidade,
+                        PrecoUnitario = item.PrecoUnitario,
+                    };
+                }).ToList()
+            }).ToList();
 
             return View(vendasVm);
         }
-
-
-
-
 
         public IActionResult Editar(int id)
         {
@@ -233,6 +232,7 @@ namespace ProjetoDriptz.Controllers
                     {
                         ModelState.Remove($"Itens[{i}].EstoqueId");
                         ModelState.Remove($"Itens[{i}].NomeProduto");
+                        ModelState.Remove($"Itens[{i}].ImagemProduto");
                         vendaVm.Itens[i].EstoqueId = 0; // ou null se for nullable
                     }
                 }
@@ -361,6 +361,7 @@ namespace ProjetoDriptz.Controllers
                 for (int i = 0; i < vendaVm.Itens?.Count; i++)
                 {
                     ModelState.Remove($"Itens[{i}].NomeProduto");
+                    ModelState.Remove($"Itens[{i}].ImagemProduto");
                 }
 
                 if (!ModelState.IsValid)

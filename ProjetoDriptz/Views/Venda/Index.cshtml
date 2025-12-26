@@ -1,22 +1,19 @@
 ﻿@using ProjetoDriptz.Enums
 @using ProjetoDriptz.Models.ViewModels
 @model List<VendaVm>
+
 @{
     ViewData["Title"] = "Vendas";
 }
 
 <style>
     .product-image {
-        width: 45px; 
-        height: 45px;
-        object-fit: cover; 
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
         border-radius: 6px;
         border: 1px solid #ddd;
-    }
-
-    .product-icon {
-        font-size: 28px;
-        line-height: 45px;
+        margin-right: 6px;
     }
 
     #table-grid td {
@@ -26,37 +23,17 @@
 
 <div class="text-center">
 
-
-    <br />
-
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-success" role="alert">
-            <button type="button" class="btn btn-danger btn-sm close-alert" arial-label="Close">X</button>
-            @TempData["MensagemSucesso"]
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger" role="alert">
-            <button type="button" class="btn btn-danger btn-sm close-alert" arial-label="Close">X</button>
-            @TempData["MensagemErro"]
-        </div>
-    }
-
     <h1>Vendas Realizadas</h1>
 
-    <table class="table" id="table-grid">
+    <table class="table table-striped" id="table-grid">
         <thead>
             <tr>
-                <th scope="col">Produto</th>
-                <th scope="col">Nome</th>
-                <th scope="col">Quantidade</th>
-                <th scope="col">Valor</th>
-                <th scope="col">Forma de Pagamento</th>
-                <th scope="col">Data da Venda</th>
-                <th scope="col">Ações</th>
+                <th>Produtos</th>
+                <th>Quantidade</th>
+                <th>Valores</th>
+                <th>Forma de Pagamento</th>
+                <th>Data da Venda</th>
+                <th>Ações</th>
             </tr>
         </thead>
 
@@ -64,46 +41,69 @@
             @foreach (var venda in Model)
             {
                 <tr>
+                    <!-- PRODUTOS -->
                     <td>
-                        @if (!string.IsNullOrEmpty(venda.ImagemProduto))
+                        @foreach (var item in venda.Itens)
                         {
-                            <a href="~/imagens/produtos/@venda.ImagemProduto" target="_blank">
-                                <img src="~/imagens/produtos/@venda.ImagemProduto"
-                                     alt="Imagem do produto"
-                                     class="product-image" />
-                            </a>
+                            <div class="d-flex align-items-center mb-1">
+                                @if (!string.IsNullOrEmpty(item.ImagemProduto))
+                                {
+                                    <img src="~/imagens/produtos/@item.ImagemProduto"
+                                         class="product-image" />
+                                }
+                                <span>@item.NomeProduto</span>
+                            </div>
                         }
-                        else
+                    </td>
+
+                    <!-- QUANTIDADES -->
+                    <td>
+                        @foreach (var item in venda.Itens)
                         {
-                            <div class="product-icon">🛍️</div>
+                            <div>@item.Quantidade</div>
                         }
+                    </td>
+
+                    <!-- VALORES -->
+                    <td>
+                        @foreach (var item in venda.Itens)
+                        {
+                            <div>R$ @item.PrecoUnitario</div>
+                        }
+                    <hr />
+                    <strong>Total: R$ @venda.ValorTotal.ToString("N2")</strong>
                 </td>
 
-
-                    <td>@venda.NomeProduto</td>
-
-                    <td>@venda.Quantidade</td>
-
-                    <td>R$ @venda.ValorProduto</td>
-
+                <!-- PAGAMENTO -->
                 <td>
                     @(venda.FormaDePagamento == (int)FormaDePagamento.Dinheiro ? "Dinheiro"
                                         : venda.FormaDePagamento == (int)FormaDePagamento.Pix ? "Pix"
                                         : "Cartão")
                 </td>
 
+                    <!-- DATA -->
                     <td>@venda.DataVenda.ToString("dd/MM/yyyy")</td>
 
+                    <!-- AÇÕES -->
                     <td>
-                        <div class="btn-group" role="group" aria-label="Ações">
-                            <a role="button" class="btn btn-primary" asp-route-id="@venda.Id" asp-controller="Venda" asp-action="Editar">Editar</a>
-                            <a role="button" class="btn btn-danger" asp-route-id="@venda.Id" asp-controller="Venda" asp-action="ApagarConfirmacao">Apagar</a>
+                        <div class="btn-group">
+                            <a class="btn btn-primary"
+                               asp-controller="Venda"
+                               asp-action="Editar"
+                               asp-route-id="@venda.Id">
+                                Editar
+                            </a>
+
+                            <a class="btn btn-danger"
+                               asp-controller="Venda"
+                               asp-action="ApagarConfirmacao"
+                               asp-route-id="@venda.Id">
+                                Apagar
+                            </a>
                         </div>
                     </td>
-
-            </tr>
+                </tr>
                         }
         </tbody>
-      
     </table>
 </div>

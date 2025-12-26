@@ -45,6 +45,7 @@ namespace ProjetoDriptz.Models.ViewModels
         public int ProdutoId { get; set; }
         public int EstoqueId { get; set; }
         public string NomeProduto { get; set; }
+        public string ImagemProduto { get; set; }
         public TamanhoProduto Tamanho { get; set; }
         public int Quantidade { get; set; }
         public decimal PrecoUnitario { get; set; }
