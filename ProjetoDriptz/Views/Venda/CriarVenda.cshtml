@@ -151,11 +151,11 @@
 
             <!-- LADO ESQUERDO -->
             <div class="pdv-produtos">
-                <h4>Ponto de Venda</h4>
+                 <!--   <h4>Ponto de Venda</h4>
 
                 <input type="text"
                        class="form-control mb-3"
-                       placeholder="Buscar produtos..." />
+                       placeholder="Buscar produtos..." />-->
 
                 <div class="produto-grid">
                     @foreach (var estoque in ViewBag.Estoques)
@@ -236,6 +236,8 @@
 let descontoGlobal = 0;
 let carrinho = [];
 
+/* ================== CARRINHO ================== */
+
 function adicionarItem(produtoId, estoqueId, tamanho, nome, preco) {
     const item = carrinho.find(i => i.estoqueId === estoqueId);
     if (item) {
@@ -248,7 +250,7 @@ function adicionarItem(produtoId, estoqueId, tamanho, nome, preco) {
             nome,
             preco,
             quantidade: 1,
-            desconto: 0 // desconto individual
+            desconto: 0
         });
     }
     renderCarrinho();
@@ -267,18 +269,23 @@ function renderCarrinho() {
         lista.innerHTML += `
             <div class="carrinho-item">
                 <div>
-                    <strong>${item.nome}</strong> <span class="badge bg-secondary">${getTamanhoNome(item.tamanho)}</span><br/>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="alterarQuantidade(${item.estoqueId}, -1)">-</button>
+                    <strong>${item.nome}</strong>
+                    <span class="badge bg-secondary">${getTamanhoNome(item.tamanho)}</span><br/>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="alterarQuantidade(${item.estoqueId}, -1)">-</button>
                     <span class="mx-2">${item.quantidade}</span>
-                    <button type="button" class="btn btn-sm btn-outline-success" onclick="alterarQuantidade(${item.estoqueId}, 1)">+</button>
-                    <input type="number" min="0" max="100" value="${item.desconto}" style="width:60px;margin-left:10px"
+                    <button type="button" class="btn btn-sm btn-outline-success"
+                            onclick="alterarQuantidade(${item.estoqueId}, 1)">+</button>
+
+                    <input type="number" min="0" max="100"
+                           value="${item.desconto}"
+                           style="width:60px;margin-left:10px"
                            onchange="atualizarDescontoItem(${item.estoqueId}, this.value)" />%
                 </div>
                 <div>R$ ${totalItem.toFixed(2)}</div>
             </div>
         `;
 
-        // hidden inputs para backend
         itensVenda.innerHTML += `
             <input type="hidden" name="Itens[${index}].ProdutoId" value="${item.produtoId}" />
             <input type="hidden" name="Itens[${index}].EstoqueId" value="${item.estoqueId}" />
@@ -302,6 +309,7 @@ function atualizarDescontoItem(estoqueId, valor) {
 function alterarQuantidade(estoqueId, delta) {
     const item = carrinho.find(i => i.estoqueId === estoqueId);
     if (!item) return;
+
     item.quantidade += delta;
     if (item.quantidade <= 0) {
         carrinho = carrinho.filter(i => i.estoqueId !== estoqueId);
@@ -310,32 +318,57 @@ function alterarQuantidade(estoqueId, delta) {
 }
 
 function getTamanhoNome(tamanhoEnum) {
-    const tamanhos = {0:'PP',1:'P',2:'M',3:'G',4:'GG',5:'XG'};
+    const tamanhos = { 0:'PP', 1:'P', 2:'M', 3:'G', 4:'GG', 5:'XG' };
     return tamanhos[tamanhoEnum] || tamanhoEnum;
 }
 
-// desconto global
+/* ================== DESCONTO GLOBAL ================== */
+
 document.getElementById("descontoGlobal").addEventListener("input", () => {
     descontoGlobal = parseFloat(document.getElementById("descontoGlobal").value) || 0;
     renderCarrinho();
 });
 
 function aplicarDesconto() {
-    // subtotal sem desconto
     let subtotal = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade, 0);
-    // total com desconto por item
-    let totalItens = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade * (1 - i.desconto / 100), 0);
-    // aplica desconto global
+    let totalItens = carrinho.reduce((acc, i) =>
+        acc + i.preco * i.quantidade * (1 - i.desconto / 100), 0);
+
     let valorDescontoGlobal = totalItens * (descontoGlobal / 100);
     let totalFinal = totalItens - valorDescontoGlobal;
 
-    // atualiza HTML
     document.getElementById("subtotal").innerText = `R$ ${subtotal.toFixed(2)}`;
-    document.getElementById("valorDesconto").innerText = `R$ ${(subtotal - totalItens + valorDescontoGlobal).toFixed(2)}`;
+    document.getElementById("valorDesconto").innerText =
+        `R$ ${(subtotal - totalItens + valorDescontoGlobal).toFixed(2)}`;
     document.getElementById("total").innerText = `R$ ${totalFinal.toFixed(2)}`;
 
-    // envia para backend
     document.getElementById("inputValorTotal").value = totalFinal.toFixed(2);
-    document.getElementById("inputDescontoPercentual").value = descontoGlobal; // desconto geral
+    document.getElementById("inputDescontoPercentual").value = descontoGlobal;
 }
+
+/* ================== PAGAMENTO ADICIONAL ================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const chkMaisPagamento = document.getElementById("chkMaisPagamento");
+    const divPagamentoAdicional = document.getElementById("pagamentoAdicional");
+    const inputValorAdicional = document.querySelector("[name='ValorAdicional']");
+    const selectPagamentoAdicional = document.querySelector("[name='FormaDePagamentoAdicional']");
+
+    function togglePagamentoAdicional() {
+        if (chkMaisPagamento.checked) {
+            divPagamentoAdicional.style.display = "block";
+            inputValorAdicional.required = true;
+            selectPagamentoAdicional.required = true;
+        } else {
+            divPagamentoAdicional.style.display = "none";
+            inputValorAdicional.value = "";
+            selectPagamentoAdicional.selectedIndex = 0;
+            inputValorAdicional.required = false;
+            selectPagamentoAdicional.required = false;
+        }
+    }
+
+    chkMaisPagamento.addEventListener("change", togglePagamentoAdicional);
+    togglePagamentoAdicional();
+});
 </script>

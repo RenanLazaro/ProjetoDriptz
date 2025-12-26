@@ -76,42 +76,72 @@ namespace ProjetoDriptz.Reports
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.RelativeColumn(3); // Produto
+                    columns.RelativeColumn(4); // Produtos
                     columns.RelativeColumn(2); // Data
-                    columns.RelativeColumn(2); // Quantidade
-                    columns.RelativeColumn(2); // Valor Unitário
-                    columns.RelativeColumn(2); // Valor Total
+                    columns.RelativeColumn(2); // Quantidades
+                    columns.RelativeColumn(2); // Valores Unitários
+                    columns.RelativeColumn(2); // Total da Venda
                 });
 
                 // ===== HEADER =====
                 table.Header(header =>
                 {
-                    HeaderCell(header.Cell(), "Produto");
+                    HeaderCell(header.Cell(), "Produtos");
                     HeaderCell(header.Cell(), "Data");
-                    HeaderCell(header.Cell(), "Quantidade");
-                    HeaderCell(header.Cell(), "Valor Unitário");
-                    HeaderCell(header.Cell(), "Valor Total");
+                    HeaderCell(header.Cell(), "Qtd");
+                    HeaderCell(header.Cell(), "Valor Unit.");
+                    HeaderCell(header.Cell(), "Total da Venda");
                 });
 
-                decimal totalGeral = _vm.Vendas
-                    .SelectMany(v => v.VendaItens)
-                    .Sum(i => i.Quantidade * i.PrecoUnitario);
+                decimal totalGeral = 0;
 
-
-                // ===== LINHAS =====
+                // ===== LINHAS (1 LINHA POR VENDA) =====
                 foreach (var venda in _vm.Vendas)
                 {
-                    foreach (var item in venda.VendaItens)
+                    var totalVenda = venda.VendaItens.Sum(i => i.Quantidade * i.PrecoUnitario);
+                    totalGeral += totalVenda;
+
+                    // PRODUTOS
+                    table.Cell().Border(1).Padding(5).Column(col =>
                     {
-                        BodyCell(table.Cell(), item.Produto.NomeProduto);
-                        BodyCell(table.Cell(), venda.DataVenda.ToString("dd/MM/yyyy"));
-                        BodyCell(table.Cell(), item.Quantidade.ToString(), c => c.AlignCenter());
-                        BodyCell(table.Cell(), item.PrecoUnitario.ToString("C", _ptBr), c => c.AlignRight());
+                        foreach (var item in venda.VendaItens)
+                        {
+                            col.Item().Text($"• {item.Produto.NomeProduto}");
+                        }
+                    });
 
-                        var total = item.Quantidade * item.PrecoUnitario;
-                        BodyCell(table.Cell(), total.ToString("C", _ptBr), c => c.AlignRight());
+                    // DATA
+                    BodyCell(
+                        table.Cell(),
+                        venda.DataVenda.ToString("dd/MM/yyyy"),
+                        c => c.AlignCenter()
+                    );
 
-                    }
+                    // QUANTIDADES
+                    table.Cell().Border(1).Padding(5).Column(col =>
+                    {
+                        foreach (var item in venda.VendaItens)
+                        {
+                            col.Item().AlignCenter().Text(item.Quantidade.ToString());
+                        }
+                    });
+
+                    // VALORES UNITÁRIOS
+                    table.Cell().Border(1).Padding(5).Column(col =>
+                    {
+                        foreach (var item in venda.VendaItens)
+                        {
+                            col.Item().AlignRight()
+                                .Text(item.PrecoUnitario.ToString("C", _ptBr));
+                        }
+                    });
+
+                    // TOTAL DA VENDA
+                    BodyCell(
+                        table.Cell(),
+                        totalVenda.ToString("C", _ptBr),
+                        c => c.AlignRight()
+                    );
                 }
 
                 // ===== TOTAL GERAL =====
@@ -130,9 +160,9 @@ namespace ProjetoDriptz.Reports
                     .AlignRight()
                     .Text(totalGeral.ToString("C", _ptBr))
                     .Bold();
-
             });
         }
+
 
         // ================= ESTILOS =================
         void HeaderCell(IContainer cell, string text)
