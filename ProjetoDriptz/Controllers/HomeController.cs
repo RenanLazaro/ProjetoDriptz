@@ -7,7 +7,8 @@ using System.Text.Json;
 namespace ProjetoDriptz.Controllers
 {
     //preciso resolver problema de autenticação
-    //[PaginaParaUsuarioLogado]
+   
+ //   [PaginaParaUsuarioLogado]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

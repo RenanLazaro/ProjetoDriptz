@@ -5,6 +5,8 @@ using ProjetoDriptz.Repositorio;
 using QuestPDF.Fluent;
 using Rotativa.AspNetCore;
 
+
+[PaginaParaUsuarioLogado]
 public class RelatoriosController : Controller
 {
     private readonly IVendaRepositorio _vendaRepositorio;

@@ -7,6 +7,7 @@ using ProjetoDriptz.Repositorio;
 
 namespace ProjetoDriptz.Controllers
 {
+    [PaginaParaUsuarioLogado]
     public class VendaController : Controller
     {
         private readonly IEstoqueRepositorio _estoqueRepositorio;

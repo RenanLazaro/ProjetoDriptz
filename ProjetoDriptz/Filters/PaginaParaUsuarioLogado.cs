@@ -1,34 +1,42 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ProjetoDriptz.Models;
 using System.Text.Json;
 
-namespace ProjetoDriptz.Filters
+public class PaginaParaUsuarioLogado : ActionFilterAttribute
 {
-    public class PaginaParaUsuarioLogado : ActionFilterAttribute
+    public override void OnActionExecuting(ActionExecutingContext context)
     {
-          public override void OnActionExecuting(ActionExecutingContext context)
-          {
-              string sessaoUsuario = context.HttpContext.Session.GetString("UsuarioLogado");
+        // ✅ Ignora validação se for página de Login
+        if (context.RouteData.Values["controller"].ToString().ToLower() == "login")
+        {
+            base.OnActionExecuting(context);
+            return;
+        }
 
-              if (string.IsNullOrEmpty(sessaoUsuario))
-              {
-                  context.Result = new RedirectToRouteResult(new RouteValueDictionary { { "controller", "login" }, { "action", "index" } });
-              }
-              else 
-              { 
-                  UsuarioModel usuario = JsonSerializer.Deserialize<UsuarioModel>(sessaoUsuario);
+        string sessaoUsuario = context.HttpContext.Session.GetString("sessaoUsuarioLogado");
 
-                  if(usuario == null)
-                  {
-                     context.Result = new RedirectToRouteResult(new RouteValueDictionary { { "controller", "login" }, { "action", "index" } });
-                  }
-              }
+        if (string.IsNullOrEmpty(sessaoUsuario))
+        {
+            context.Result = new RedirectToRouteResult(
+                new RouteValueDictionary {
+                    { "controller", "Login" },
+                    { "action", "Index" }
+                });
+        }
+        else
+        {
+            UsuarioModel usuario = JsonSerializer.Deserialize<UsuarioModel>(sessaoUsuario);
+            if (usuario == null)
+            {
+                context.Result = new RedirectToRouteResult(
+                    new RouteValueDictionary {
+                        { "controller", "Login" },
+                        { "action", "Index" }
+                    });
+            }
+        }
 
-                  base.OnActionExecuting(context);
-          }
-
+        base.OnActionExecuting(context);
     }
-       
- }
+}

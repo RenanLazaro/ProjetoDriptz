@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ProjetoDriptz.Filters;
 using ProjetoDriptz.Models;
 using ProjetoDriptz.Repositorio;
 

@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ProjetoDriptz.Data;
 using ProjetoDriptz.Helper;
 using ProjetoDriptz.Repositorio;
-using Rotativa.AspNetCore;
 using QuestPDF.Infrastructure;
+using Rotativa.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);

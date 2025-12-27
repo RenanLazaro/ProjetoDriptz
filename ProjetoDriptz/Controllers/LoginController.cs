@@ -21,9 +21,20 @@ namespace ProjetoDriptz.Controllers
 
         public IActionResult Index()
         {
-            // Se o usuário já estiver logado, redireciona para a home
-
-            if (_sessao.BuscarSessaoUsuario() != null) return RedirectToAction("Index", "Home");
+            try
+            {
+                // Se o usuário já estiver logado, redireciona para a home
+                var usuarioLogado = _sessao.BuscarSessaoUsuario();
+                if (usuarioLogado != null)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            catch (Exception)
+            {
+                // Se houver erro ao buscar sessão, limpa tudo
+                HttpContext.Session.Clear();
+            }
 
             return View();
         }
@@ -36,6 +47,14 @@ namespace ProjetoDriptz.Controllers
         {
             _sessao.RemoverSessaoUsuario();
             return RedirectToAction("Index", "Login");
+        }
+
+        public IActionResult LimparSessao()
+        {
+            HttpContext.Session.Clear();
+            Response.Cookies.Delete(".AspNetCore.Session");
+            TempData["MensagemSucesso"] = "Sessão limpa com sucesso!";
+            return RedirectToAction("Index");
         }
 
         [HttpPost]

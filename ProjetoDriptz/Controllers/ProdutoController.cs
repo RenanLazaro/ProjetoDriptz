@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoDriptz.Enums;
-using ProjetoDriptz.Filters;
 using ProjetoDriptz.Models;
 using ProjetoDriptz.Models.ViewModels;
 using ProjetoDriptz.Repositorio;
 
 namespace ProjetoDriptz.Controllers
 {
-//    [PaginaParaUsuarioLogado]
+    [PaginaParaUsuarioLogado]
 
     public class ProdutoController : Controller
     {
