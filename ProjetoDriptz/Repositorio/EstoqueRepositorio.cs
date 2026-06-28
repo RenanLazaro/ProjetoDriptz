@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjetoDriptz.Data;
 using ProjetoDriptz.Models;
+using ProjetoDriptz.Repositorio.Interfaces;
 
 namespace ProjetoDriptz.Repositorio
 {

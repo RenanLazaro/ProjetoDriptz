@@ -2,6 +2,7 @@
 using ProjetoDriptz.Data;
 using ProjetoDriptz.Models;
 using ProjetoDriptz.Models.ViewModels;
+using ProjetoDriptz.Repositorio.Interfaces;
 
 namespace ProjetoDriptz.Repositorio
 {

@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ProjetoDriptz.Enums;
 using ProjetoDriptz.Models;
 using ProjetoDriptz.Models.ViewModels;
-using ProjetoDriptz.Repositorio;
+using ProjetoDriptz.Repositorio.Interfaces;
 
 namespace ProjetoDriptz.Controllers
 {
-    [PaginaParaUsuarioLogado]
+    [PaginaParaAdminLogado]
     public class VendaController : Controller
     {
         private readonly IEstoqueRepositorio _estoqueRepositorio;

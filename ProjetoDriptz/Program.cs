@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using ProjetoDriptz.Data;
 using ProjetoDriptz.Helper;
 using ProjetoDriptz.Repositorio;
+using ProjetoDriptz.Repositorio.Interfaces;
 using QuestPDF.Infrastructure;
 using Rotativa.AspNetCore;
 
@@ -24,6 +25,8 @@ builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
 builder.Services.AddScoped<IEstoqueRepositorio, EstoqueRepositorio>();
 builder.Services.AddScoped<IVendaRepositorio, VendaRepositorio>();
 builder.Services.AddScoped<IVendaItemRepositorio, VendaItemRepositorio>();
+builder.Services.AddScoped<IPedidoRepositorio, PedidoRepositorio>();
+builder.Services.AddScoped<IPromocaoRepositorio, PromocaoRepositorio>();
 
 builder.Services.AddScoped<IEmail, Email>();
 builder.Services.AddScoped<ISessao, Sessao>();

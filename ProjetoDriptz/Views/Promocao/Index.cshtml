@@ -1,0 +1,115 @@
+@* =====================================================================
+   ARQUIVO: Views/Promocao/Index.cshtml  — ARQUIVO NOVO
+   ===================================================================== *@
+@model List<ProjetoDriptz.Models.PromocaoModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; @* Layout do admin *@
+    ViewData["Title"] = "Promoções";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0"><i class="bi bi-tag"></i> Promoções e Combos</h3>
+        <a href="@Url.Action("Criar")" class="btn btn-dark">
+            <i class="bi bi-plus-lg"></i> Nova promoção
+        </a>
+    </div>
+
+    @if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["MensagemErro"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["MensagemErro"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-tag fs-1"></i>
+            <p class="mt-2">Nenhuma promoção cadastrada ainda.</p>
+            <a href="@Url.Action("Criar")" class="btn btn-dark mt-2">Criar primeira promoção</a>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Promoção</th>
+                            <th>Produto</th>
+                            <th>Desconto</th>
+                            <th>Vigência</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model)
+                        {
+                            var ativa = p.EstaAtiva();
+                            <tr>
+                                <td class="fw-semibold">@p.Nome</td>
+                                <td>@p.Produto?.NomeProduto</td>
+                                <td>
+                                    @if (p.TipoDesconto == ProjetoDriptz.Enums.TipoDesconto.Percentual)
+                                    {
+                                        <span class="badge bg-warning text-dark">@p.DescontoPercentual% off</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info text-dark">Por R$ @p.PrecoFixo?.ToString("F2")</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@p.DataInicio.ToString("dd/MM/yyyy") até @p.DataFim.ToString("dd/MM/yyyy")</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (ativa)
+                                    {
+                                        <span class="badge bg-success">Ativa</span>
+                                    }
+                                    else if (!p.Ativo)
+                                    {
+                                        <span class="badge bg-secondary">Desativada</span>
+                                    }
+                                    else if (DateTime.Today > p.DataFim)
+                                    {
+                                        <span class="badge bg-danger">Expirada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Agendada</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a href="@Url.Action("Editar", new { id = p.Id })"
+                                       class="btn btn-sm btn-outline-dark me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="Excluir" method="post" class="d-inline"
+                                          onsubmit="return confirm('Excluir esta promoção?')">
+                                        <input type="hidden" name="id" value="@p.Id" />
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

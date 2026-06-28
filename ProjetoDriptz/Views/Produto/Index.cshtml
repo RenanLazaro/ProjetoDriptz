@@ -111,10 +111,10 @@
 
                             <h5 class="product-name">@produto.NomeProduto</h5>
                             <p class="product-details">
-                                @(produto.Tipo == (int)TipoProduto.Camisa ? "Camisa"
-                                    : produto.Tipo == (int)TipoProduto.BlusaDeFrio ? "Blusa de Frio"
-                                    : produto.Tipo == (int)TipoProduto.Boné ? "Boné"
-                                    : produto.Tipo == (int)TipoProduto.Bermuda ? "Bermuda"
+                                @(produto.Tipo == (int)TipoProduto.Combo ? "Camisa"
+                                                : produto.Tipo == (int)TipoProduto.Combo ? "Blusa de Frio"
+                                                : produto.Tipo == (int)TipoProduto.Combo ? "Boné"
+                                                : produto.Tipo == (int)TipoProduto.Combo ? "Bermuda"
                                     : "Indefinido")
                             </p>
                             <p class="product-details">Preço de Custo: R$ @produto.PrecoCusto</p>

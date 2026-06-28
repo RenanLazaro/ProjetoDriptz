@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoDriptz.Models.ViewModels.Relatorio;
 using ProjetoDriptz.Reports;
-using ProjetoDriptz.Repositorio;
+using ProjetoDriptz.Repositorio.Interfaces;
 using QuestPDF.Fluent;
 using Rotativa.AspNetCore;
 
 
-[PaginaParaUsuarioLogado]
+[PaginaParaAdminLogado]
 public class RelatoriosController : Controller
 {
     private readonly IVendaRepositorio _vendaRepositorio;

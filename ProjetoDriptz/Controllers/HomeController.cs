@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjetoDriptz.Models;
-using ProjetoDriptz.Repositorio;
+using ProjetoDriptz.Repositorio.Interfaces;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -45,6 +45,11 @@ namespace ProjetoDriptz.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult AcessoNegado()
+        {
+            return View();
         }
     }
 }

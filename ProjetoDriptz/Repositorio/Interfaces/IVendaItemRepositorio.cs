@@ -1,6 +1,6 @@
 ﻿using ProjetoDriptz.Models;
 
-namespace ProjetoDriptz.Repositorio
+namespace ProjetoDriptz.Repositorio.Interfaces
 {
     public interface IVendaItemRepositorio
     {

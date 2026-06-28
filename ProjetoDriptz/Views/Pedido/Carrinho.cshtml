@@ -1,0 +1,115 @@
+@* =====================================================================
+   ARQUIVO: Views/Pedido/Carrinho.cshtml  — ARQUIVO NOVO
+   ===================================================================== *@
+@model List<ProjetoDriptz.Models.ViewModels.CarrinhoItemVm>
+@{
+    Layout = "~/Views/Shared/_LayoutCliente.cshtml";
+    ViewData["Title"] = "Meu Carrinho";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-cart3"></i> Meu Carrinho
+    </h2>
+
+    @if (TempData["MensagemAlerta"] != null)
+    {
+        <div class="alert alert-warning">@TempData["MensagemAlerta"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-cart-x fs-1"></i>
+            <p class="mt-3">Seu carrinho está vazio.</p>
+            <a href="@Url.Action("Cardapio")" class="btn btn-dark mt-2">Ver cardápio</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <table class="table mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Produto</th>
+                                    <th class="text-center">Qtd</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                @if (!string.IsNullOrEmpty(item.Imagem))
+                                                {
+                                                    <img src="~/imagens/produtos/@item.Imagem"
+                                                         width="56" height="56"
+                                                         class="rounded" style="object-fit:cover;">
+                                                }
+                                                <div>
+                                                    <div class="fw-semibold">@item.NomeProduto</div>
+                                                    <small class="text-muted">R$ @item.PrecoUnitario.ToString("F2") / un.</small>
+                                                    @if (!string.IsNullOrEmpty(item.Observacao))
+                                                    {
+                                                        <br><small class="text-secondary fst-italic">@item.Observacao</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center" style="width:140px">
+                                            <form asp-action="AtualizarQuantidade" method="post" class="d-flex align-items-center gap-1 justify-content-center">
+                                                <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                                                <input type="number" name="quantidade" value="@item.Quantidade"
+                                                       min="1" max="99" class="form-control form-control-sm text-center"
+                                                       style="width:60px"
+                                                       onchange="this.form.submit()">
+                                            </form>
+                                        </td>
+                                        <td class="text-end fw-semibold">R$ @item.SubTotal.ToString("F2")</td>
+                                        <td class="text-end">
+                                            <form asp-action="RemoverDoCarrinho" method="post">
+                                                <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                                                <button class="btn btn-sm btn-outline-danger" title="Remover">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Resumo</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Itens (@Model.Sum(i => i.Quantidade))</span>
+                            <span>R$ @Model.Sum(i => i.SubTotal).ToString("F2")</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Total</span>
+                            <span class="text-success">R$ @Model.Sum(i => i.SubTotal).ToString("F2")</span>
+                        </div>
+                        <a href="@Url.Action("Checkout")" class="btn btn-dark w-100 mt-3">
+                            Finalizar pedido <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a href="@Url.Action("Cardapio")" class="btn btn-outline-secondary w-100 mt-2">
+                            Continuar comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

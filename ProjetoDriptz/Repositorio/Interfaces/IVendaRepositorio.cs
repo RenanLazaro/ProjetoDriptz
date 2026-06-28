@@ -1,7 +1,7 @@
 ﻿using ProjetoDriptz.Models;
 using ProjetoDriptz.Models.ViewModels;
 
-namespace ProjetoDriptz.Repositorio
+namespace ProjetoDriptz.Repositorio.Interfaces
 {
     public interface IVendaRepositorio
     {

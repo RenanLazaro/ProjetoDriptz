@@ -1,0 +1,151 @@
+@* =====================================================================
+   ARQUIVO: Views/Pedido/Cardapio.cshtml  — SUBSTITUIR O EXISTENTE
+   ===================================================================== *@
+@using ProjetoDriptz.Models.ViewModels
+@model List<ProjetoDriptz.Models.ViewModels.CardapioItemVm>
+@{
+    Layout = "~/Views/Shared/_LayoutCliente.cshtml";
+    ViewData["Title"] = "Cardápio";
+}
+
+<div class="container py-4">
+
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Nosso Cardápio</h2>
+        <p class="text-muted">Escolha seus itens e adicione ao carrinho</p>
+    </div>
+
+    @* Filtro de categorias *@
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-4">
+        <a href="@Url.Action("Cardapio")"
+           class="btn btn-sm @(ViewBag.TipoSelecionado == null ? "btn-dark" : "btn-outline-dark")">
+            Todos
+        </a>
+        @foreach (var cat in ViewBag.Categorias)
+        {
+            <a href="@Url.Action("Cardapio", new { tipo = cat.Value })"
+               class="btn btn-sm @(ViewBag.TipoSelecionado != null && (int)ViewBag.TipoSelecionado == cat.Value ? "btn-dark" : "btn-outline-dark")">
+                @cat.Nome
+            </a>
+        }
+    </div>
+
+    @* Grid de produtos *@
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-basket fs-1"></i>
+            <p class="mt-2">Nenhum produto disponível no momento.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 position-relative">
+
+                        @* Badge de promoção *@
+                        @if (item.TemPromocao)
+                        {
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-danger fs-6 px-2 py-1 rounded-pill">
+                                🔥 Promoção
+                            </span>
+                        }
+
+                        @if (!string.IsNullOrEmpty(item.Imagem))
+                        {
+                            <img src="~/imagens/produtos/@item.Imagem"
+                                 class="card-img-top"
+                                 alt="@item.NomeProduto"
+                                 style="height:200px;object-fit:cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                 style="height:200px;">
+                                <i class="bi bi-image fs-1 text-muted"></i>
+                            </div>
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title fw-bold mb-1">@item.NomeProduto</h6>
+
+                            @* Preço com ou sem promoção *@
+                            @if (item.TemPromocao)
+                            {
+                                <div class="mb-2">
+                                    <span class="text-muted text-decoration-line-through me-1">
+                                        R$ @item.PrecoOriginal.ToString("F2")
+                                    </span>
+                                    <span class="text-danger fw-bold fs-5">
+                                        R$ @item.PrecoFinal.ToString("F2")
+                                    </span>
+                                    <br>
+                                    <small class="text-success fw-semibold">@item.NomePromocao</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-success fw-bold mb-2">R$ @item.PrecoFinal.ToString("F2")</p>
+                            }
+
+                            <div class="mt-auto">
+                                <div class="input-group input-group-sm mb-2">
+                                    <span class="input-group-text">Qtd</span>
+                                    <input type="number" class="form-control" value="1" min="1" max="99"
+                                           id="qtd-@item.ProdutoId">
+                                </div>
+                                <input type="text" class="form-control form-control-sm mb-2"
+                                       placeholder="Observação (opcional)"
+                                       id="obs-@item.ProdutoId">
+                                <button class="btn btn-dark btn-sm w-100"
+                                        onclick="adicionarAoCarrinho(@item.ProdutoId, @item.PrecoFinal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))">
+                                    <i class="bi bi-cart-plus"></i> Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* Toast de feedback *@
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+    <div id="toast-carrinho" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-mensagem">Item adicionado!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    async function adicionarAoCarrinho(produtoId, precoFinal) {
+        const qtd = document.getElementById('qtd-' + produtoId).value;
+        const obs = document.getElementById('obs-' + produtoId).value;
+
+        const resp = await fetch('@Url.Action("AdicionarAoCarrinho", "Pedido")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `produtoId=${produtoId}&quantidade=${qtd}&observacao=${encodeURIComponent(obs)}&precoUnitario=${precoFinal}`
+        });
+
+        const data = await resp.json();
+
+        const badge = document.getElementById('badge-carrinho');
+        if (badge) {
+            badge.textContent = data.qtdCarrinho;
+            badge.classList.remove('d-none');
+        }
+
+        document.getElementById('toast-mensagem').textContent = data.mensagem;
+        const toast = new bootstrap.Toast(document.getElementById('toast-carrinho'));
+        toast.show();
+    }
+</script>
+}

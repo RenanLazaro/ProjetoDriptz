@@ -16,6 +16,8 @@ namespace ProjetoDriptz.Data
         public DbSet<Models.EstoqueModel> Estoques { get; set; }
         public DbSet<Models.VendaModel> Vendas { get; set; }
         public DbSet<Models.VendaItemModel> VendasItens { get; set; }
+        public DbSet<Models.PedidoModel> Pedidos { get; set; }
+        public DbSet<Models.PromocaoModel> Promocoes { get; set; }
 
 
         //com relação entre produto e estoque

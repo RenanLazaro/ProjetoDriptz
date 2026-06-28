@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjetoDriptz.Helper;
 using ProjetoDriptz.Models;
-using ProjetoDriptz.Repositorio;
+using ProjetoDriptz.Repositorio.Interfaces;
 
 namespace ProjetoDriptz.Controllers
 {
