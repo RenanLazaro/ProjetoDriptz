@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -36,6 +36,26 @@ builder.Services.AddSession(o =>
 {
     o.Cookie.HttpOnly = true;
     o.Cookie.IsEssential = true;
+    // Necessário para o cookie de sessão ser enviado em requisições
+    // cross-origin feitas pelo Angular (ex: localhost:4200 -> localhost:5000)
+    o.Cookie.SameSite = SameSiteMode.None;
+    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+// CORS — libera o app Angular a consumir a API com cookies (credentials)
+const string AngularCorsPolicy = "AngularCorsPolicy";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(AngularCorsPolicy, policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:4200",   // ng serve (dev)
+                "https://localhost:4200"
+              )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // obrigatório para o cookie de sessão/auth ir junto
+    });
 });
 
 // AUTH
@@ -44,6 +64,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Login/Index";
         options.AccessDeniedPath = "/Login/Index";
+        // Mesmo motivo do cookie de sessão: precisa trafegar em requisições
+        // cross-origin vindas do Angular.
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 // MVC
@@ -57,7 +81,7 @@ builder.Services.Configure<FormOptions>(options =>
 
 var app = builder.Build();
 
-// ?? APLICA MIGRATIONS AUTOMATICAMENTE (PRODU��O)
+// ?? APLICA MIGRATIONS AUTOMATICAMENTE (PRODU��O)
 // using (var scope = app.Services.CreateScope())
 // {
 //     var db = scope.ServiceProvider.GetRequiredService<BancoContext>();
@@ -75,10 +99,12 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseCors(AngularCorsPolicy);
+
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-// ?? CONFIGURA��O OBRIGAT�RIA
+// ?? CONFIGURA��O OBRIGAT�RIA
 RotativaConfiguration.Setup(
     app.Environment.WebRootPath,
     "Rotativa"
